@@ -1,0 +1,5 @@
+class Appointment{
+
+}
+
+export { Appointment }
