@@ -3,7 +3,7 @@ $(document).ready(function () {
     var last_hour = 9;
     var last_class = 6;
 
-    var date = "19-06-2024"
+
 
     var lastModified = null;
 
@@ -20,9 +20,22 @@ $(document).ready(function () {
         }))
     }
     let params = new URLSearchParams(window.location.search)
+
+    var date = "19-06-2024"
+
+    let param_date = params.get("date");
+
+    if(param_date){
+        date = param_date
+    }
+    else{
+        let date_obj = new Date()
+        date = date_obj.getDate()+"-"+(date_obj.getMonth()+1)+"-"+date_obj.getFullYear()
+    }
+
     setTitle(date)
     var base_options = {
-        base_url: "https://vlietlandcollege.zportal.nl/api/v3/",
+        base_url: "https://"+params.get("portal")+".zportal.nl/api/v3/",
         token: params.get('token')
     }
     async function getAllData() {
@@ -102,8 +115,6 @@ $(document).ready(function () {
 
             }
         }
-
-
     }
 
 
