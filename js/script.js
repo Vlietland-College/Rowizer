@@ -1,11 +1,21 @@
+import { ZermeloApi } from "./zermelo/zermelo.js";
+
 $(document).ready(function () {
     console.log("loaded")
+    let params = new URLSearchParams(window.location.search)
+
+    var zapi = new ZermeloApi({
+        portal: params.get("portal"),
+        token: params.get("token")
+    });
+
     var last_hour = 9;
     var last_class = 6;
 
 
 
     var lastModified = null;
+
 
 
     function setTitle(date_string) {
@@ -19,7 +29,6 @@ $(document).ready(function () {
             day: 'numeric'
         }))
     }
-    let params = new URLSearchParams(window.location.search)
 
     var date = "19-06-2024"
 
@@ -103,9 +112,9 @@ $(document).ready(function () {
     function fillWholeTable() {
         let records = changedRecordHolderInstance.getRecords()
 
-        for (hour = 1; hour <= last_hour; hour++) {
+        for (let hour = 1; hour <= last_hour; hour++) {
             let this_hour_records = records.filter(item => item.period == hour)
-            for (classyear = 1; classyear <= last_class; classyear++) {
+            for (let classyear = 1; classyear <= last_class; classyear++) {
                 let this_cell_records = this_hour_records.filter(item => item.classYear == classyear)
                 let html_list = $("tr:eq(" + classyear + ") td:eq(" + hour + ") ul")
                 this_cell_records.forEach(item => {
