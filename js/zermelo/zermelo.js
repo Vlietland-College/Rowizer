@@ -3,6 +3,8 @@ import SchoolsManager from "./lib/schools/schoolsManager.js";
 import AppointmentsManager from "./lib/appointments/appointmentsManager.js";
 import branchesOfSchoolsManager from "./lib/branchesOfSchools/branchesOfSchoolsManager.js";
 
+
+
 class ZermeloApi  {
     #url;
     #default_options;
@@ -31,6 +33,7 @@ class ZermeloApi  {
         }
 
         this.#session = new Session(this.portal, this.token);
+
         this.schools = new SchoolsManager(this.#session);
         this.appointments = new AppointmentsManager(this.#session);
         this.brancheOfSchools = new branchesOfSchoolsManager(this.#session);
