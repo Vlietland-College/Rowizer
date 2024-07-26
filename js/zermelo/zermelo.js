@@ -1,6 +1,12 @@
-class ZermeloApi {
+import Session from "./utils/session.js";
+import SchoolsManager from "./lib/schools/schoolsManager.js";
+import AppointmentsManager from "./lib/appointments/appointmentsManager.js";
+import branchesOfSchoolsManager from "./lib/branchesOfSchools/branchesOfSchoolsManager.js";
+
+class ZermeloApi  {
     #url;
-    #default_options
+    #default_options;
+    #session;
     constructor(options) {
         const {
             portal,
@@ -23,16 +29,13 @@ class ZermeloApi {
             school: null,
 
         }
-    }
 
-    #request(path, options){
-        const reqHeaders = new Headers();
-        reqHeaders.append("Authorization", "Bearer "+this.token)
+        this.#session = new Session(this.portal, this.token);
+        this.schools = new SchoolsManager(this.#session);
+        this.appointments = new AppointmentsManager(this.#session);
+        this.brancheOfSchools = new branchesOfSchoolsManager(this.#session);
 
-        let req = new Request(this.#url+"/"+path+"?"+Object.entries(options).map(e => e.join('=')).join('&'), {
-            method: "GET",
-            headers: reqHeaders,
-        });
+
     }
 
 }

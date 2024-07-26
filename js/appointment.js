@@ -1,5 +1,0 @@
-class Appointment{
-
-}
-
-export { Appointment }

@@ -5,6 +5,5 @@ to view today's changes on a screen. This project aims to provide a simple, secu
 information on screens. 
 
 ## Try a demo
-The demo will be available very soon. (It was ready before I remembered not everyone has the same school ID, oops)
-
+[Here you can try a demo](https://vlietland-college.github.io/Rowizer?token=ql605d4r5pbb7lffhprln7hcon&portal=j9qeq&date=19-6-2024&branch=a). The data is fetched from my development portal. 
 

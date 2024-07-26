@@ -1,13 +1,22 @@
 import { ZermeloApi } from "./zermelo/zermelo.js";
+let params = new URLSearchParams(window.location.search)
 
+var zapi = new ZermeloApi({
+    portal: params.get("portal"),
+    token: params.get("token"),
+    branch: params.get("branch")
+});
+
+
+
+
+window.zapi = zapi
 $(document).ready(function () {
     console.log("loaded")
     let params = new URLSearchParams(window.location.search)
 
-    var zapi = new ZermeloApi({
-        portal: params.get("portal"),
-        token: params.get("token")
-    });
+    //portal: naam vh portal, token: api-token, brin: brinnummer schoolinyear te zoeken, branch: branchcode (vestigingscode)
+
 
     var last_hour = 9;
     var last_class = 6;
@@ -42,6 +51,37 @@ $(document).ready(function () {
         date = date_obj.getDate()+"-"+(date_obj.getMonth()+1)+"-"+date_obj.getFullYear()
     }
 
+    let branch = params.get("branch")
+
+    if(branch === null){
+        let schools = zapi.brancheOfSchools.get().then(branches=>{
+            if(branches.length > 1){
+                throw new Error("Multiple branches found, please define branch in the url")
+            }
+            else{
+                zapi.branch = branches[0]
+            }
+            getAllData()
+        })
+    }
+    else{
+        let date_parts = date.split("-")
+        let school_year = date_parts[2]
+        //als het voor de zvak is moet er een jaar af
+        if(date_parts[1] < 8){
+            school_year = school_year - 1
+        }
+        let school = zapi.brancheOfSchools.get({branch: branch, schoolYear: school_year}).then(branches =>{
+            if(branches.length === 0){
+                throw new Error("No branches found for this year with this code")
+            }
+            else{
+                zapi.branch = branches[0]
+            }
+            getAllData()
+        })
+    }
+
     setTitle(date)
     var base_options = {
         base_url: "https://"+params.get("portal")+".zportal.nl/api/v3/",
@@ -56,7 +96,7 @@ $(document).ready(function () {
         let end_time = new Date(date_parts[2], date_parts[1]-1, date_parts[0], 23, 59).getTime()/1000
 
         let request_options = {
-            schoolInSchoolYear: 301,
+            branchOfSchool: zapi.branch.id,
             fields: ["appointmentInstance", "start", "end", "startTimeSlot", "endTimeSlot", "type", "groups", "groupsInDepartments", "locations", "cancelled", "cancelledReason", "modified", "teacherChanged", "groupChanged", "locationChanged", "timeChanged", "moved", "hidden", "changeDescription", "schedulerRemark", "lastModified", "new", "courses", "appointmentLastModified", "remark", "subjects", "teachers","valid" ],
             includeHidden: true,
             start: start_time,
@@ -212,7 +252,7 @@ $(document).ready(function () {
     }
 
     var changedRecordHolderInstance = new ChangedRecordHolder()
-    getAllData()
+
 
     // Your code to run since DOM is loaded and ready
 });
