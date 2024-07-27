@@ -1,10 +1,8 @@
-import Manager from "../manager.js";
+import {ManagerWithId} from "../manager.js";
 import branchOfSchool from "./branchesOfSchoolsInterface.js";
 
-export default class branchesOfSchoolsManager extends Manager{
+export default class BranchesOfSchoolsManager extends ManagerWithId{
     endpoint = "branchesofschools";
     interface = branchOfSchool;
-
-
 }
 

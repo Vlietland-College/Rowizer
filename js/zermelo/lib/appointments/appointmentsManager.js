@@ -1,4 +1,4 @@
-import Manager from "../manager.js";
+import { Manager } from "../manager.js";
 import Appointment from "./appointmentInterface.js";
 
 class AppointmentsManager extends Manager{

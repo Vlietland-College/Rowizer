@@ -1,6 +1,5 @@
 import { ZermeloApi } from "./zermelo/zermelo.js";
-import ChangedRecordHolder from "./changes/changedRecordHolder.js";
-
+import { Changes } from "./changes/changes.js";
 let params = new URLSearchParams(window.location.search)
 
 var zapi = new ZermeloApi({
@@ -14,7 +13,7 @@ var zapi = new ZermeloApi({
 
 window.zapi = zapi
 $(document).ready(function () {
-    console.log("loaded")
+    console.log("loadedsd")
     let params = new URLSearchParams(window.location.search)
 
     //portal: naam vh portal, token: api-token, brin: brinnummer schoolinyear te zoeken, branch: branchcode (vestigingscode)
@@ -24,6 +23,8 @@ $(document).ready(function () {
     var last_class = 6;
 
     var lastModified = null;
+
+
 
 
 
@@ -51,15 +52,15 @@ $(document).ready(function () {
         date = date_obj.getDate()+"-"+(date_obj.getMonth()+1)+"-"+date_obj.getFullYear()
     }
 
-    let branch = params.get("branch")
 
+    let branch = params.get("branch")
     if(branch === null){
         let schools = zapi.brancheOfSchools.get().then(branches=>{
-            if(branches.length > 1){
+            if(Object.keys(branches).length > 1){
                 throw new Error("Multiple branches found, please define branch in the url")
             }
             else{
-                zapi.branch = branches[0]
+                zapi.branch = Object.values(branches)[0]
             }
             getAllData()
         })
@@ -72,11 +73,11 @@ $(document).ready(function () {
             school_year = school_year - 1
         }
         let school = zapi.brancheOfSchools.get({branch: branch, schoolYear: school_year}).then(branches =>{
-            if(branches.length === 0){
+            if(Object.keys(branches).length === 0){
                 throw new Error("No branches found for this year with this code")
             }
             else{
-                zapi.branch = branches[0]
+                zapi.branch = Object.values(branches)[0]
             }
             getAllData()
         })
@@ -89,6 +90,8 @@ $(document).ready(function () {
         let date_parts = date.split('-')
         let start_time = (new Date(date_parts[2], date_parts[1]-1, date_parts[0], 0, 0).getTime()/1000)
         let end_time = new Date(date_parts[2], date_parts[1]-1, date_parts[0], 23, 59).getTime()/1000
+
+       let departmentsofbranch = zapi.departmentsOfBranches.get({branchOfSchool:zapi.branch.id, fields:['id','code','yearOfEducation', 'weekTimeTable', 'educations']}).then(r=>console.log(r))
 
 
         let request_options = {
@@ -109,7 +112,7 @@ $(document).ready(function () {
         request_options.cancelled = true
         let cancelled = zapi.appointments.get( request_options)
 
-        let promise_all = Promise.all([modified, invalid, cancelled]).then(res =>{
+        Promise.all([modified, invalid, cancelled]).then(res =>{
             allDataLoaded({
                 modified: res[0],
                 invalid: res[1],
@@ -124,18 +127,18 @@ $(document).ready(function () {
 
     function allDataLoaded(data) {
 
-        data.modified.filter(obj => obj.groups.length != 0).forEach(obj => changedRecordHolderInstance.add(obj))
+        data.modified.filter(obj => obj.groups.length != 0).forEach(obj => changesManager.changedRecordHolderInstance.add(obj))
         //data.cancelled.filter(obj=> obj.groups.length != 0).forEach(obj => changedRecordHolderInstance.add(obj))
-        data.invalid.filter(obj => obj.groups.length != 0).forEach(obj => changedRecordHolderInstance.add(obj))
-        console.log(changedRecordHolderInstance)
-        console.log(changedRecordHolderInstance.find(7601, 2))
+        data.invalid.filter(obj => obj.groups.length != 0).forEach(obj => changesManager.changedRecordHolderInstance.add(obj))
+        console.log(changesManager.changedRecordHolderInstance)
+        console.log(changesManager.changedRecordHolderInstance.find(7601, 2))
         fillWholeTable()
 
 
     }
 
     function fillWholeTable() {
-        let records = changedRecordHolderInstance.getRecords()
+        let records = changesManager.changedRecordHolderInstance.getRecords()
 
         for (let hour = 1; hour <= last_hour; hour++) {
             let this_hour_records = records.filter(item => item.period == hour)
@@ -151,12 +154,7 @@ $(document).ready(function () {
         }
     }
 
-
-
-
-
-
-    var changedRecordHolderInstance = new ChangedRecordHolder()
+    var changesManager = new Changes()
 
 
     // Your code to run since DOM is loaded and ready

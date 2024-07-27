@@ -10,4 +10,22 @@ class Manager{
         return res.map(r => new this.interface(r))
     }
 }
-export default Manager;
+
+class ManagerWithId extends Manager{
+
+    async get(options = {}){
+        if(options.fields !== undefined && !options.fields.includes("id")){
+            options.fields.push('id')
+        }
+
+        let res = await super.get(options)
+
+        let res_holder = {}
+        res.forEach(r => {
+            res_holder[r.id] = r
+        })
+        return res_holder
+    }
+}
+
+export { Manager, ManagerWithId };

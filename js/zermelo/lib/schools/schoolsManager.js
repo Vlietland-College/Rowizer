@@ -1,7 +1,7 @@
-import Manager from "../manager.js";
+import { ManagerWithId } from "../manager.js";
 import School from "./schoolInterface.js";
 
-class SchoolsManager extends Manager{
+class SchoolsManager extends ManagerWithId{
     endpoint = "schools";
     interface = School;
 
