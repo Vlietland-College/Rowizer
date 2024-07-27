@@ -8,12 +8,80 @@ var zapi = new ZermeloApi({
     branch: params.get("branch")
 });
 
+class ChangesUiManager{
+    constructor(element, api){
+        this.element = element
+        this.api = api
 
+        //changesmanager does the change models and so.
+        this.changesManager = new Changes();
+        this.schoolYear = null;
+        this.date = null;
+
+        this.setDate(new Date().toLocaleString("nl-NL", {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+        }))
+
+        this.branchOfSchool = null
+        this.userBranchCode = null
+        this.branches = []
+
+
+        //find all branches, then if there's one branch find the one in the current schoolyear
+        this.branchPromise = new Promise((resolve)=>{
+            this.api.branches.get().then(b => {
+                this.branches = b;
+                //TODO use this.setBranch
+                if(this.branches.length === 1) {
+                    this.api.branchesOfSchools.get({schoolYear: this.schoolYear}).then(b => {
+                        this.branchOfSchool = Object.values(b)[0]
+                        resolve();
+                    });
+                }
+                else{
+                    resolve();
+                }
+
+            })
+        })
+
+    }
+
+
+    setDate(date){
+        let date_parts = date.split("-");
+        this.date = new Date(date_parts[2], date_parts[1] - 1, date_parts[0], 0, 0)
+        this.schoolYear = date_parts[2]
+        if(date_parts[1] < 8){
+            this.schoolYear = date_parts[2] - 1
+        }
+    }
+
+    async setBranch(code){
+        this.userBranchCode = code
+        let branches = await this.api.branchesOfSchools.get({branch: code, schoolYear: this.schoolYear})
+        if(Object.values(branches).length !== 1) {
+            throw new Error("No branches found (or multuple)")
+        }
+        this.branchOfSchool = Object.values(branches)[0]
+    }
+
+    refresh(){
+
+    }
+
+}
 
 
 window.zapi = zapi
 $(document).ready(function () {
     console.log("loadedsd")
+
+
+
+
     let params = new URLSearchParams(window.location.search)
 
     //portal: naam vh portal, token: api-token, brin: brinnummer schoolinyear te zoeken, branch: branchcode (vestigingscode)
@@ -26,7 +94,7 @@ $(document).ready(function () {
 
 
 
-
+    var changesUiManager = new ChangesUiManager(null, zapi)
 
     function setTitle(date_string) {
 
@@ -44,8 +112,10 @@ $(document).ready(function () {
 
     let param_date = params.get("date");
 
+
     if(param_date){
         date = param_date
+        changesUiManager.setDate(date)
     }
     else{
         let date_obj = new Date()
@@ -53,35 +123,21 @@ $(document).ready(function () {
     }
 
 
+
     let branch = params.get("branch")
-    if(branch === null){
-        let schools = zapi.brancheOfSchools.get().then(branches=>{
-            if(Object.keys(branches).length > 1){
-                throw new Error("Multiple branches found, please define branch in the url")
-            }
-            else{
-                zapi.branch = Object.values(branches)[0]
-            }
+    if(branch !== null){
+        changesUiManager.setBranch(branch).then(b=> {zapi.branch = changesUiManager.branchOfSchool; getAllData()})
+    }
+    else {
+        changesUiManager.branchPromise.then(a => {
+            zapi.branch = changesUiManager.branchOfSchool;
             getAllData()
+
         })
     }
-    else{
-        let date_parts = date.split("-")
-        let school_year = date_parts[2]
-        //als het voor de zvak is moet er een jaar af
-        if(date_parts[1] < 8){
-            school_year = school_year - 1
-        }
-        let school = zapi.brancheOfSchools.get({branch: branch, schoolYear: school_year}).then(branches =>{
-            if(Object.keys(branches).length === 0){
-                throw new Error("No branches found for this year with this code")
-            }
-            else{
-                zapi.branch = Object.values(branches)[0]
-            }
-            getAllData()
-        })
-    }
+
+
+
 
     setTitle(date)
 
@@ -127,18 +183,18 @@ $(document).ready(function () {
 
     function allDataLoaded(data) {
 
-        data.modified.filter(obj => obj.groups.length != 0).forEach(obj => changesManager.changedRecordHolderInstance.add(obj))
+        data.modified.filter(obj => obj.groups.length != 0).forEach(obj => changesUiManager.changesManager.changedRecordHolderInstance.add(obj))
         //data.cancelled.filter(obj=> obj.groups.length != 0).forEach(obj => changedRecordHolderInstance.add(obj))
-        data.invalid.filter(obj => obj.groups.length != 0).forEach(obj => changesManager.changedRecordHolderInstance.add(obj))
-        console.log(changesManager.changedRecordHolderInstance)
-        console.log(changesManager.changedRecordHolderInstance.find(7601, 2))
+        data.invalid.filter(obj => obj.groups.length != 0).forEach(obj => changesUiManager.changesManager.changedRecordHolderInstance.add(obj))
+        console.log(changesUiManager.changesManager.changedRecordHolderInstance)
+        console.log(changesUiManager.changesManager.changedRecordHolderInstance.find(7601, 2))
         fillWholeTable()
 
 
     }
 
     function fillWholeTable() {
-        let records = changesManager.changedRecordHolderInstance.getRecords()
+        let records = changesUiManager.changesManager.changedRecordHolderInstance.getRecords()
 
         for (let hour = 1; hour <= last_hour; hour++) {
             let this_hour_records = records.filter(item => item.period == hour)
@@ -154,7 +210,7 @@ $(document).ready(function () {
         }
     }
 
-    var changesManager = new Changes()
+
 
 
     // Your code to run since DOM is loaded and ready

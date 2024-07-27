@@ -17,15 +17,11 @@ class Session{
 
         let result = await fetch(req)
 
-
         let data = await result.json()
         if(data.response.status !== 200){
             throw new ZermeloError(data.response.status+" "+data.response.message)
-
         }
         return data.response.data
-
     }
-
 }
 export default Session;

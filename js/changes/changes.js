@@ -1,11 +1,9 @@
 import ChangedRecordHolder from "./lib/changedRecordHolder.js";
 
 class Changes {
-    constructor(branchesOfSchools) {
-        this.branchesOfSchools = branchesOfSchools;
+    constructor() {
 
         this.changedRecordHolderInstance = new ChangedRecordHolder()
-
     }
 }
 

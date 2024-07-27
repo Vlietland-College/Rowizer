@@ -4,6 +4,7 @@ import AppointmentsManager from "./lib/appointments/appointmentsManager.js";
 import BranchesOfSchoolsManager from "./lib/branchesOfSchools/branchesOfSchoolsManager.js";
 import DepartmentsOfBranchesManager from "./lib/departmentsOfBranches/departmentsOfBranchesManager.js";
 import GroupInDepartmentsManager from "./lib/groupInDepartments/groupInDepartmentsManager.js";
+import BranchesManager from "./lib/branches/branchesManager.js";
 
 
 
@@ -37,9 +38,12 @@ class ZermeloApi  {
 
         this.schools = new SchoolsManager(this.#session);
         this.appointments = new AppointmentsManager(this.#session);
-        this.brancheOfSchools = new BranchesOfSchoolsManager(this.#session);
+        this.branches = new BranchesManager(this.#session)
+
+        this.branchesOfSchools = new BranchesOfSchoolsManager(this.#session);
         this.departmentsOfBranches = new DepartmentsOfBranchesManager(this.#session);
         this.groupInDepartments = new GroupInDepartmentsManager(this.#session);
+
     }
 
 }
