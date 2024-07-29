@@ -9,20 +9,21 @@ var zapi = new ZermeloApi({
 });
 
 class ChangesUiManager{
-    constructor(element, api){
+    #start_time;
+    #end_time
+    constructor(element, api, date = new Date().toLocaleString("nl-NL", {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+    })){
         this.element = element
         this.api = api
 
         //changesmanager does the change models and so.
         this.changesManager = new Changes();
-        this.schoolYear = null;
+        this.schoolYear = null
         this.date = null;
-
-        this.setDate(new Date().toLocaleString("nl-NL", {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric',
-        }))
+        this.setDate(date)
 
         this.branchOfSchool = null
         this.userBranchCode = null
@@ -49,7 +50,31 @@ class ChangesUiManager{
 
     }
 
+    async fetchChanges(){
+        let request_options = {
+            branchOfSchool: this.branchOfSchool.id,
+            fields: ["appointmentInstance", "start", "end", "startTimeSlot", "endTimeSlot", "type", "groups", "groupsInDepartments", "locations", "cancelled", "cancelledReason", "modified", "teacherChanged", "groupChanged", "locationChanged", "timeChanged", "moved", "hidden", "changeDescription", "schedulerRemark", "lastModified", "new", "courses", "appointmentLastModified", "remark", "subjects", "teachers","valid" ],
+            includeHidden: true,
+            start: this.#start_time/1000,
+            end:this.#end_time/1000,
+            modified: true,
+            valid: true
+        }
 
+        let modified = this.api.appointments.get(request_options)
+        request_options.valid = false
+        delete request_options.modified
+        let invalid = this.api.appointments.get( request_options)
+        delete request_options.valid
+        request_options.cancelled = true
+        let cancelled = this.api.appointments.get( request_options)
+
+        let data = await Promise.all([modified, invalid, cancelled])
+
+        console.log(data)
+        return data
+
+    }
     setDate(date){
         let date_parts = date.split("-");
         this.date = new Date(date_parts[2], date_parts[1] - 1, date_parts[0], 0, 0)
@@ -57,6 +82,9 @@ class ChangesUiManager{
         if(date_parts[1] < 8){
             this.schoolYear = date_parts[2] - 1
         }
+        this.#start_time = this.date.getTime()
+        this.date.setHours(23, 59, 59)
+        this.#end_time = this.date.getTime()
     }
 
     async setBranch(code){
@@ -75,7 +103,7 @@ class ChangesUiManager{
 }
 
 
-window.zapi = zapi
+
 $(document).ready(function () {
     console.log("loadedsd")
 
@@ -84,7 +112,7 @@ $(document).ready(function () {
 
     let params = new URLSearchParams(window.location.search)
 
-    //portal: naam vh portal, token: api-token, brin: brinnummer schoolinyear te zoeken, branch: branchcode (vestigingscode)
+    //portal: naam vh portal, token: api-token, branch: branchcode (vestigingscode)
 
 
     var last_hour = 9;
@@ -93,37 +121,10 @@ $(document).ready(function () {
     var lastModified = null;
 
 
-
-    var changesUiManager = new ChangesUiManager(null, zapi)
-
-    function setTitle(date_string) {
-
-        let date_parts = date_string.split("-")
-        let date_obj = new Date(date_parts[2], date_parts[1] - 1, date_parts[0], 0, 0)
-        $("#title").text("Roosterwijzigingen " + date_obj.toLocaleString("nl-NL", {
-            weekday: 'long',
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
-        }))
-    }
-
-    var date = "19-06-2024"
-
     let param_date = params.get("date");
 
-
-    if(param_date){
-        date = param_date
-        changesUiManager.setDate(date)
-    }
-    else{
-        let date_obj = new Date()
-        date = date_obj.getDate()+"-"+(date_obj.getMonth()+1)+"-"+date_obj.getFullYear()
-    }
-
-
-
+    var changesUiManager = new ChangesUiManager(null, zapi, param_date ? param_date : undefined)
+    window.cm = changesUiManager
     let branch = params.get("branch")
     if(branch !== null){
         changesUiManager.setBranch(branch).then(b=> {zapi.branch = changesUiManager.branchOfSchool; getAllData()})
@@ -139,20 +140,30 @@ $(document).ready(function () {
 
 
 
-    setTitle(date)
+    $("#title").text("Roosterwijzigingen " + changesUiManager.date.toLocaleString("nl-NL", {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    }))
 
     async function getAllData(){
 
-        let date_parts = date.split('-')
+        let date_parts = changesUiManager.date.toLocaleString("nl-NL", {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+        }).split('-')
         let start_time = (new Date(date_parts[2], date_parts[1]-1, date_parts[0], 0, 0).getTime()/1000)
         let end_time = new Date(date_parts[2], date_parts[1]-1, date_parts[0], 23, 59).getTime()/1000
-
+        console.log(" g data", start_time, end_time)
+        changesUiManager.fetchChanges()
        let departmentsofbranch = zapi.departmentsOfBranches.get({branchOfSchool:zapi.branch.id, fields:['id','code','yearOfEducation', 'weekTimeTable', 'educations']}).then(r=>console.log(r))
 
 
         let request_options = {
             branchOfSchool: zapi.branch.id,
-            fields: ["appointmentInstance", "start", "end", "startTimeSlot", "endTimeSlot", "type", "groups", "groupsInDepartments", "locations", "cancelled", "cancelledReason", "modified", "teacherChanged", "groupChanged", "locationChanged", "timeChanged", "moved", "hidden", "changeDescription", "schedulerRemark", "lastModified", "new", "courses", "appointmentLastModified", "remark", "subjects", "teachers","valid" ],
+            fields: ["id","appointmentInstance", "start", "end", "startTimeSlot", "endTimeSlot", "type", "groups", "groupsInDepartments", "locations", "cancelled", "cancelledReason", "modified", "teacherChanged", "groupChanged", "locationChanged", "timeChanged", "moved", "hidden", "changeDescription", "schedulerRemark", "lastModified", "base", "courses", "appointmentLastModified", "remark", "subjects", "teachers","valid" ],
             includeHidden: true,
             start: start_time,
             end:end_time,
@@ -182,10 +193,15 @@ $(document).ready(function () {
 
 
     function allDataLoaded(data) {
-
+        let all_data_for_debug = {}
+        Object.values(data).forEach(type => type.forEach((item) => {
+            all_data_for_debug[item.id] = item
+        }))
+        window.ad = all_data_for_debug
         data.modified.filter(obj => obj.groups.length != 0).forEach(obj => changesUiManager.changesManager.changedRecordHolderInstance.add(obj))
-        //data.cancelled.filter(obj=> obj.groups.length != 0).forEach(obj => changedRecordHolderInstance.add(obj))
+        data.cancelled.filter(obj=> obj.groups.length != 0).forEach(obj => changesUiManager.changesManager.changedRecordHolderInstance.add(obj))
         data.invalid.filter(obj => obj.groups.length != 0).forEach(obj => changesUiManager.changesManager.changedRecordHolderInstance.add(obj))
+
         console.log(changesUiManager.changesManager.changedRecordHolderInstance)
         console.log(changesUiManager.changesManager.changedRecordHolderInstance.find(7601, 2))
         fillWholeTable()

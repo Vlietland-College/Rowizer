@@ -38,11 +38,13 @@ export default class ChangedRecord {
     }
 
     itemHtml() {
-        if (this.newest == null) {
+        let str = "<div " + (this.newest ? "newest='"+this.newest.id+"' ": "") + (this.old ? "newest='"+this.old.id+"' ": "")+">"
+        //of newest is null, dan is de les verplaatst en niks overheen gepland. Of newest is cancelled
+        if (this.newest == null || this.newest.cancelled) {
             //les vervalt
-            return "<div>" + this.readableGroupName + " " + this.subjectOrCluster + " vervalt </div>"
+            return str + this.readableGroupName + " " + this.subjectOrCluster + " vervalt </div>"
         } else {
-            return "<div>" + this.readableGroupName + " " + this.subjectOrCluster + " " + this.newest.locations.join(",") + " " + this.newest.teachers.join(",") + "</div>"
+            return str + this.readableGroupName + " " + this.subjectOrCluster + " " + this.newest.locations.join(",") + " " + this.newest.teachers.join(",") + "</div>"
         }
 
         console.log(this)
