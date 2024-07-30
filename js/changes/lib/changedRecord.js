@@ -24,7 +24,7 @@ export default class ChangedRecord {
         if (this.cluster) {
             return this.cluster
         } else {
-            return this.newest ? this.newest.subjects[0] : this.old.subjects[0]
+            return (this.newest ? this.newest.subjects[0] : this.old.subjects[0]).slice(0,6)
         }
 
     }
@@ -37,14 +37,38 @@ export default class ChangedRecord {
         }
     }
 
+    get readableTeachers(){
+        if(this.newest.teachers.length > 1){
+            return this.newest.teachers[0] + "+"+ (this.newest.teachers.length-1).toString()
+        } else{
+            return this.newest.teachers[0]
+        }
+    }
+
+    get readableLocation(){
+        let length = this.newest.locations.length
+        if(!length){
+            return ""
+        }
+        else if(length === 1){
+            return this.newest.locations[0].slice(0,4)
+        }
+        else if(length === 2){
+            return this.newest.locations[0].slice(0,4) + "+"+ (this.newest.locations.length-1).toString()
+        }else{
+            return this.newest.locations[0] + "+"+ (length-1).toString()
+
+        }
+    }
+
     itemHtml() {
-        let str = "<div " + (this.newest ? "newest='"+this.newest.id+"' ": "") + (this.old ? "newest='"+this.old.id+"' ": "")+">"
+        let str = "<div " + (this.newest ? "newest='"+this.newest.id+"' ": "") + (this.old ? "old='"+this.old.id+"' ": "")+">"
         //of newest is null, dan is de les verplaatst en niks overheen gepland. Of newest is cancelled
         if (this.newest == null || this.newest.cancelled) {
             //les vervalt
             return str + this.readableGroupName + " " + this.subjectOrCluster + " vervalt </div>"
         } else {
-            return str + this.readableGroupName + " " + this.subjectOrCluster + " " + this.newest.locations.join(",") + " " + this.newest.teachers.join(",") + "</div>"
+            return str + this.readableGroupName + " " + this.subjectOrCluster + " " + this.readableLocation + " " + this.readableTeachers + "</div>"
         }
 
         console.log(this)

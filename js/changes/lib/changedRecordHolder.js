@@ -21,15 +21,12 @@ export default class ChangedRecordHolder {
                 rec_obj = new ChangedRecord(group, item.groups[index], item.startTimeSlot)
                 this._changedRecords.push(rec_obj)
             }
-            if(item.appointmentInstance === 444766){
-                //debugger;
-            }
 
             if (item.valid) {
                 if(rec_obj.newest !== null){
                     //er is bvb een les gecanceld op dit moment en een andere les overheen gepland
                     if(item.cancelled){
-                        //dan is dit de gecancelde les
+                        //dan is dit de gecancelde les: valid en gecanceld
                         rec_obj.old = item
                     }
                     else{
@@ -51,15 +48,23 @@ export default class ChangedRecordHolder {
             } else {
                 if(rec_obj.old !== null){
                     if(rec_obj.old.id !== item.id){
-                        console.warn("other old item is set than this")
-                        console.log(rec_obj)
-                        console.log(rec_obj.old, item)
+                        //er is een les vervallen en een nieuwe les neergezet op dit moment.
+                        if(rec_obj.old.valid){
+                            //de rec_obj.old is valid, de nieuwe niet want item.valid is eerder al geif't. Deze kunnen we dus droppen.
+                        }
+                        else {
+                            console.warn("other old item is set than this")
+                            console.log(rec_obj)
+                            console.log(rec_obj.old, item)
+                        }
+
                     }else{
                         console.warn("old is already taken by same appointment (double loading)")
-
                     }
                 }
-                rec_obj.old = item
+                else {
+                    rec_obj.old = item
+                }
             }
 
         })

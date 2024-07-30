@@ -163,7 +163,7 @@ $(document).ready(function () {
 
         let request_options = {
             branchOfSchool: zapi.branch.id,
-            fields: ["id","appointmentInstance", "start", "end", "startTimeSlot", "endTimeSlot", "type", "groups", "groupsInDepartments", "locations", "cancelled", "cancelledReason", "modified", "teacherChanged", "groupChanged", "locationChanged", "timeChanged", "moved", "hidden", "changeDescription", "schedulerRemark", "lastModified", "base", "courses", "appointmentLastModified", "remark", "subjects", "teachers","valid" ],
+            fields: ["id","appointmentInstance", "start", "end", "startTimeSlot", "endTimeSlot", "type", "groups", "groupsInDepartments", "locations", "cancelled", "cancelledReason", "modified", "teacherChanged", "groupChanged", "locationChanged", "timeChanged", "moved", "hidden", "changeDescription", "schedulerRemark", "lastModified", "base", "courses", "appointmentLastModified", "remark", "subjects", "teachers","valid"],
             includeHidden: true,
             start: start_time,
             end:end_time,
@@ -178,12 +178,16 @@ $(document).ready(function () {
         delete request_options.valid
         request_options.cancelled = true
         let cancelled = zapi.appointments.get( request_options)
+        delete request_options.cancelled
+        request_options.type = 'activity'
+        let activities = zapi.appointments.get( request_options)
 
-        Promise.all([modified, invalid, cancelled]).then(res =>{
+        Promise.all([modified, invalid, cancelled, activities]).then(res =>{
             allDataLoaded({
                 modified: res[0],
                 invalid: res[1],
                 cancelled: res[2],
+                activities: res[3]
             })
         })
 
@@ -201,6 +205,7 @@ $(document).ready(function () {
         data.modified.filter(obj => obj.groups.length != 0).forEach(obj => changesUiManager.changesManager.changedRecordHolderInstance.add(obj))
         data.cancelled.filter(obj=> obj.groups.length != 0).forEach(obj => changesUiManager.changesManager.changedRecordHolderInstance.add(obj))
         data.invalid.filter(obj => obj.groups.length != 0).forEach(obj => changesUiManager.changesManager.changedRecordHolderInstance.add(obj))
+        data.activities.filter(obj => obj.groups.length != 0).forEach(obj => changesUiManager.changesManager.changedRecordHolderInstance.add(obj))
 
         console.log(changesUiManager.changesManager.changedRecordHolderInstance)
         console.log(changesUiManager.changesManager.changedRecordHolderInstance.find(7601, 2))
