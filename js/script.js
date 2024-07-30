@@ -202,10 +202,10 @@ $(document).ready(function () {
             all_data_for_debug[item.id] = item
         }))
         window.ad = all_data_for_debug
+        data.activities.filter(obj => obj.groups.length != 0).forEach(obj => changesUiManager.changesManager.changedRecordHolderInstance.add(obj))
         data.modified.filter(obj => obj.groups.length != 0).forEach(obj => changesUiManager.changesManager.changedRecordHolderInstance.add(obj))
         data.cancelled.filter(obj=> obj.groups.length != 0).forEach(obj => changesUiManager.changesManager.changedRecordHolderInstance.add(obj))
         data.invalid.filter(obj => obj.groups.length != 0).forEach(obj => changesUiManager.changesManager.changedRecordHolderInstance.add(obj))
-        data.activities.filter(obj => obj.groups.length != 0).forEach(obj => changesUiManager.changesManager.changedRecordHolderInstance.add(obj))
 
         console.log(changesUiManager.changesManager.changedRecordHolderInstance)
         console.log(changesUiManager.changesManager.changedRecordHolderInstance.find(7601, 2))
