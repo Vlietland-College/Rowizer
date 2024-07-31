@@ -12,7 +12,6 @@ import TimeslotsNamesManager from "./lib/timeslotNames/timeslotsNamesManager.js"
 
 class ZermeloApi  {
     #url;
-    #default_options;
     #session;
     constructor(options) {
         const {
@@ -30,11 +29,6 @@ class ZermeloApi  {
 
         this.#url = "https://"+this.portal+".zportal.nl/api/v"+this.version+"/"
 
-        this.#default_options = {
-            branchOfSchools: null,
-            schoolInSchoolYear: null,
-            school: null,
-        }
 
         this.#session = new Session(this.portal, this.token);
 

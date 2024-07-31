@@ -11,7 +11,7 @@ var zapi = new ZermeloApi({
 class ChangesUiManager{
     #start_time;
     #end_time
-    constructor(element, api, date = new Date().toLocaleString("nl-NL", {
+    constructor(element, api, manager, date = new Date().toLocaleString("nl-NL", {
         day: '2-digit',
         month: '2-digit',
         year: 'numeric',
@@ -20,33 +20,11 @@ class ChangesUiManager{
         this.api = api
 
         //changesmanager does the change models and so.
-        this.changesManager = new Changes();
-        this.schoolYear = null
-        this.date = null;
+        this.changesManager = manager;
+
         this.setDate(date)
 
-        this.branchOfSchool = null
-        this.userBranchCode = null
-        this.branches = []
 
-
-        //find all branches, then if there's one branch find the one in the current schoolyear
-        this.branchPromise = new Promise((resolve)=>{
-            this.api.branches.get().then(b => {
-                this.branches = b;
-                //TODO use this.setBranch
-                if(this.branches.length === 1) {
-                    this.api.branchesOfSchools.get({schoolYear: this.schoolYear}).then(b => {
-                        this.branchOfSchool = Object.values(b)[0]
-                        resolve();
-                    });
-                }
-                else{
-                    resolve();
-                }
-
-            })
-        })
 
     }
 
@@ -78,6 +56,8 @@ class ChangesUiManager{
     setDate(date){
         let date_parts = date.split("-");
         this.date = new Date(date_parts[2], date_parts[1] - 1, date_parts[0], 0, 0)
+        this.changesManager.setDate(this.date)
+
         this.schoolYear = date_parts[2]
         if(date_parts[1] < 8){
             this.schoolYear = date_parts[2] - 1
@@ -123,7 +103,9 @@ $(document).ready(function () {
 
     let param_date = params.get("date");
 
-    var changesUiManager = new ChangesUiManager(null, zapi, param_date ? param_date : undefined)
+    let param_branch = params.get("branch");
+    var changesManager = new Changes({zermelo:zapi, branch: param_branch? param_branch : undefined});
+    var changesUiManager = new ChangesUiManager(null, zapi, changesManager,param_date ? param_date : undefined)
     window.cm = changesUiManager
     let branch = params.get("branch")
     if(branch !== null){
