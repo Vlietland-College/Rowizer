@@ -23,11 +23,11 @@ export default class ChangedRecord {
     get subjectOrCluster() {
         if (this.cluster) {
             if( this.newest && this.newest.type === "activity"){
-                return this.cluster + " " + this.newest.subjects[0].slice(0,6)
+                return this.cluster + " " + this.newest.subjects[0].slice(0,6).toLowerCase()
             }
             return this.cluster
         } else {
-            return (this.newest ? this.newest.subjects[0].slice(0,6) : this.old.subjects[0]).slice(0,6)
+            return (this.newest ? this.newest.subjects[0].slice(0,6).toLowerCase() : this.old.subjects[0]).slice(0,6).toLowerCase()
         }
 
     }
