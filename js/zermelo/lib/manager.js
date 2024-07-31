@@ -4,8 +4,8 @@ class Manager{
         this.session = session
     }
 
-    async get(options = {}){
-        let res = await this.session.request(this.endpoint, options)
+    async get(options = {}, req_options = {}){
+        let res = await this.session.request(this.endpoint, options, req_options)
 
         return res.map(r => new this.interface(r))
     }
@@ -13,12 +13,12 @@ class Manager{
 
 class ManagerWithId extends Manager{
 
-    async get(options = {}){
+    async get(options = {}, req_options = {cache:'force-cache'}){
         if(options.fields !== undefined && !options.fields.includes("id")){
             options.fields.push('id')
         }
 
-        let res = await super.get(options)
+        let res = await super.get(options, req_options)
 
         let res_holder = {}
         res.forEach(r => {

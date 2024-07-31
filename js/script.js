@@ -105,7 +105,7 @@ class ChangesUiManager{
 
 
 $(document).ready(function () {
-    console.log("loadedsd")
+    console.log("loadedsdsdsd")
 
 
 
@@ -158,8 +158,11 @@ $(document).ready(function () {
         let end_time = new Date(date_parts[2], date_parts[1]-1, date_parts[0], 23, 59).getTime()/1000
         console.log(" g data", start_time, end_time)
         changesUiManager.fetchChanges()
-       let departmentsofbranch = zapi.departmentsOfBranches.get({branchOfSchool:zapi.branch.id, fields:['id','code','yearOfEducation', 'weekTimeTable', 'educations']}).then(r=>console.log(r))
 
+
+       let departmentsofbranch = zapi.departmentsOfBranches.get({branchOfSchool:zapi.branch.id, fields:['id','code','yearOfEducation', 'weekTimeTable', 'educations']}).then(r=>console.log(r))
+        let timeslotnames = zapi.timeslotNames.get({schoolInSchoolYear: zapi.branch.schoolInSchoolYear}).then(r=>console.log(r))
+        let timeslots = zapi.timeslots.get({schoolInSchoolYear: zapi.branch.schoolInSchoolYear}).then(r=>console.log(r))
 
         let request_options = {
             branchOfSchool: zapi.branch.id,
