@@ -56,10 +56,18 @@ class ChangesUiManager{
 
             row.append(first_cell)
 
+            let container_cell = document.createElement('td');
+            container_cell.setAttribute('colspan', (timeslots.length).toString())
+            row.append(container_cell)
+            let year_table = document.createElement('table')
+            year_table.classList.add("year-table")
+            container_cell.append(year_table)
+            let base_row = document.createElement('tr');
+            year_table.append(base_row)
             timeslots.forEach(slot=>{
                 let cell = document.createElement('td')
                 cell.setAttribute('data-timeslot', slot.rank)
-                row.append(cell)
+                base_row.append(cell)
             })
             table.append(row)
         })

@@ -13,7 +13,178 @@
 
 <body>
 <div id="title"></div>
-<div id="content-container"></div>
+<div id="content-container" style="display: none"></div>
+
+<style>
+    .year-content-container{
+        --years-of-education: 6;
+        --timeslots: 4;
+    }
+
+    #container-test * {
+        border: 1px solid black;
+    }
+
+    .flex{
+        display: flex;
+        flex: 1;
+    }
+    .schedule-container{
+        flex-direction: column;
+    }
+
+    .year-row.header{
+        max-height: 20px;
+    }
+
+    .year-header{
+        max-width: 15px
+    }
+
+    .year-content-container{
+        display: grid;
+        grid-auto-flow: row;
+        width: 100%;
+        grid-template-columns: repeat(var(--timeslots, 1), 1fr);
+    }
+    .appointment{
+
+        grid-column-start: var(--start-hour);
+        grid-column-end: calc(var(--end-hour) + 1)
+    }
+</style>
+
+<div id="container-test">
+    <div class="schedule-container flex">
+        <div class="year-row header flex">
+            <div class="year-header flex"></div>
+            <div class="hour-header flex">
+                <div class="hour-header flex">1e</div>
+                <div class="hour-header flex">2e</div>
+                <div class="hour-header flex">3e</div>
+                <div class="hour-header flex">4e</div>
+            </div>
+        </div>
+        <div class="year-row flex">
+            <div class="year-header flex">1</div>
+            <div class="year-content flex">
+                <div class="year-content-container">
+                    <div  class="appointment lesson" style="--start-hour:1;--end-hour:4;">item hour 1 tm 4</div>
+                    <div class="appointment lesson" style="--start-hour:1;--end-hour:1;">first hour item</div>
+                    <div  class="appointment lesson" style="--start-hour:2;--end-hour:2;">second hour item</div>
+                    <div  class="appointment lesson" style="--start-hour:3;--end-hour:3;">third hour item</div>
+
+                    <div  class="appointment lesson" style="--start-hour:2;--end-hour:2;">second hour item2</div>
+                    <div  class="appointment lesson" style="--start-hour:1;--end-hour:2;">item hour 1 and 2</div>
+                    <div  class="appointment lesson" style="--start-hour:3;--end-hour:3;">third hour item2</div>
+                    <div  class="appointment lesson" style="--start-hour:1;--end-hour:1;">item hour 1 2</div>
+                    <div  class="appointment lesson" style="--start-hour:4;--end-hour:4;">item hour 4</div>
+                </div>
+            </div>
+        </div>
+        <div class="year-row flex">
+            <div class="year-header flex" x>2</div>
+            <div class="year-content flex">
+                <div class="year-content-container"></div>
+            </div>
+        </div>
+        <div class="year-row flex">
+            <div class="year-header flex">3</div>
+            <div class="year-content flex">
+                <div class="year-content-container"></div>
+            </div>
+        </div>
+
+        <div class="year-row flex">
+            <div class="year-header flex">4</div>
+            <div class="year-content flex">
+                <div class="year-content-container"></div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<div id="flex-test" style="display: none">
+<style>
+    .fcontainer {
+        display:flex;
+    }
+    .fcolumn{
+        flex-direction: column
+    }
+    .fspread {
+        flex: 1;
+    }
+    #flex-try * {
+        border: 1px solid black;
+    }
+
+
+</style>
+<div id="flex-try" class="fcontainer fcolumn">
+    <div class="fcontainer" id="flex-firstrow">
+        <div style="flex-basis: 20px"></div>
+        <div class="fcontainer fspread">
+        <div class="fcontainer fspread">1e</div>
+        <div class="fcontainer fspread">2e</div>
+        <div class="fcontainer fspread">3e</div>
+        <div class="fcontainer fspread">4e</div>
+        </div>
+    </div>
+    <div class="fcontainer">
+        <div class="fcontainer" style="flex-basis: 20px">1</div>
+        <div class="fcontainer fspread fcolumn">
+            <div class="fcontainer fspread">
+                <div class="fcontainer fspread">1e uur event</div>
+                <div class="fcontainer fspread fcolumn" style="flex-grow: 2">
+                    <div class="fcontainer fspread">2e en 3e uur event</div>
+                    <div class="fcontainer fspread">
+                        <div class="fcontainer fspread">2e uur event</div>
+                        <div class="fcontainer fspread">3e uur event</div>
+                    </div>
+                </div>
+                <div class="fcontainer fspread">4e uur event</div>
+            </div>
+        </div>
+    </div>
+    <div class="fcontainer">
+        <div class="fcontainer" style="flex-basis: 20px">2</div>
+        <div class="fcontainer fspread fcolumn">
+            <div class="fcontainer fspread">
+                <div class="fcontainer fspread">1e uur event</div>
+
+                <div class="fcontainer fspread fcolumn"style="flex-grow: 2" >
+                    <div class="fcontainer fspread">2e en 3e uur event</div>
+                    <div class="fcontainer fspread">
+                        <div class="fcontainer fspread">2e uur event</div>
+                        <div class="fcontainer fspread">3e uur event</div>
+                    </div>
+                </div>
+                <div class="fcontainer fspread">4e uur event</div>
+            </div>
+        </div>
+    </div>
+    <div class="fcontainer">
+        <div class="fcontainer" style="flex-basis: 20px">3</div>
+        <div class="fcontainer fspread">
+            <div class="fcontainer fspread"></div>
+            <div class="fcontainer fspread"></div>
+            <div class="fcontainer fspread"></div>
+            <div class="fcontainer fspread"></div>
+        </div>
+    </div>
+    <div class="fcontainer">
+        <div class="fcontainer" style="flex-basis: 20px">4</div>
+        <div class="fcontainer fspread">
+            <div class="fcontainer fspread"></div>
+            <div class="fcontainer fspread"></div>
+            <div class="fcontainer fspread">asd</div>
+            <div class="fcontainer fspread" style="visibility: hidden">lalalala</div>
+        </div>
+    </div>
+</div>
+</div>
 <table id= "rooster" style="display: none;">
     <tr>
         <th style="height: 10px; width: 10px"></th>
