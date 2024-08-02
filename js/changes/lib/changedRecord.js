@@ -69,12 +69,12 @@ export default class ChangedRecord {
         //of newest is null, dan is de les verplaatst en niks overheen gepland. Of newest is cancelled
         if (this.newest == null || this.newest.cancelled) {
             //les vervalt
-            return str + this.readableGroupName + " " + this.subjectOrCluster + " vervalt </div>"
+            return [str + this.readableGroupName + " " + this.subjectOrCluster + " vervalt </div>"]
         } else {
-            return str + this.readableGroupName + " " + this.subjectOrCluster + " " + this.readableLocation + " " + this.readableTeachers + "</div>"
+            return [str + this.readableGroupName + " " + this.subjectOrCluster + " " + this.readableLocation + " " + this.readableTeachers + "</div>"]
         }
 
-        console.log(this)
+
 
     }
 }

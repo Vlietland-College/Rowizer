@@ -3,6 +3,7 @@ import ChangedRecord from "./changedRecord.js";
 export default class ChangedRecordHolder {
     constructor() {
         this._changedRecords = []
+        this._rawData = []
     }
 
     getRecords(year, period) {
@@ -13,7 +14,9 @@ export default class ChangedRecordHolder {
         return this._changedRecords.find(obj => obj.period == period && obj.group == group)
     }
 
+
     add(item) {
+
         item.groupsInDepartments.forEach((group, index) => {
 
             let rec_obj = this.find(group, item.startTimeSlot)

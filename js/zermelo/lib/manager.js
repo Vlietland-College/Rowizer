@@ -7,7 +7,10 @@ class Manager{
     async get(options = {}, req_options = {}){
         let res = await this.session.request(this.endpoint, options, req_options)
 
-        return res.map(r => new this.interface(r))
+        return res.map(r => {
+            if(r.id){Number(r.id)}
+            return new this.interface(r)
+        })
     }
 }
 
