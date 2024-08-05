@@ -96,6 +96,13 @@ class Changes {
         return this.#groupsInDepartment[id]
     }
 
+    getDepartmentOfBranch(id){
+        return this.#departments[id]
+    }
+
+    get appointments(){
+        return this.#appointments
+    }
     get yearsOfEducation(){
         return this.#yearsOfEducation
     }

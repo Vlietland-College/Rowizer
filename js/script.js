@@ -8,6 +8,67 @@ var zapi = new ZermeloApi({
     branch: params.get("branch")
 });
 
+class ChangesUIRecord{
+    constructor(entity, department, period, appointment){
+        this.entity = entity;
+        this.period = period;
+        this.departmentOfBranch = department
+
+        this.appointment = appointment;
+
+        this.element = null;
+    }
+
+    getElement(){
+        if(this.element){
+            return this.element
+        }
+        return this.#createElement()
+
+    }
+    getYear(){
+
+    }
+
+    #createElement(){
+        let el = document.createElement("div");
+        el.classList.add("appointment", this.appointment.type)
+
+        //for activities use real times
+        el.style.setProperty('--start-hour', this.period);
+        el.style.setProperty('--end-hour', this.period);
+        el.innerText = this.#getInnerText()
+
+        this.element = el
+        return this.element
+    }
+
+    #getInnerText(){
+
+        if(this.appointment.type === 'lesson') {
+            if (!this.appointment.cancelled && this.appointment.valid) {
+                return this.entity.name + " " + this.appointment.subjects[0] + " " + this.appointment.teachers[0] + this.appointment.locations[0]
+            } else {
+                return this.entity.name + " vervalt"
+            }
+        }
+        else if(this.appointment.type === "activity"){
+            if (!this.appointment.cancelled && this.appointment.valid) {
+                return this.entity.name + " act " + this.appointment.subjects[0] + " " + this.appointment.teachers[0] + this.appointment.locations[0]
+            } else {
+                return this.entity.name + " act vervalt"
+            }
+        }
+    }
+
+}
+
+class ChangesUIRecordClass extends ChangesUIRecord{
+    constructor(group, department, period, appointment) {
+        super(group, department, period, appointment);
+    }
+}
+
 class ChangesUiManager{
     #start_time;
     #end_time
@@ -28,53 +89,131 @@ class ChangesUiManager{
         let date_parts = date.split("-");
         this.date = new Date(date_parts[2], date_parts[1] - 1, date_parts[0], 0, 0)
         this.changesManager.setDate(this.date)
+        this.table = null;
     }
 
     makeTable(){
         let yearsOfEducation = Object.keys(this.changesManager.yearsOfEducation).sort()
         let timeslots = this.changesManager.timeslots.sort((a,b)=>a.rank-b.rank)
-        let table = document.createElement('table');
-        table.classList.add('changes-table');
 
-        let first_row = document.createElement('tr');
-        first_row.append(document.createElement('th'))
+        let container = document.createElement('div')
+        container.classList.add("schedule-container", "schedule-flex")
+        container.style.setProperty('--years-of-education', yearsOfEducation.at(-1));
+        container.style.setProperty('--timeslots', timeslots.at(-1).rank);
+        //set css variables
+        let year_row = document.createElement('div')
+        year_row.classList.add("year-row","schedule-flex", "header")
+        let node = document.createElement('div');
+        node.classList.add("schedule-flex", "year-header")
+        year_row.append(node)
+        container.append(year_row)
 
         timeslots.forEach(slot=>{
-            let header_cell = document.createElement('th')
-            header_cell.innerText = slot.name
-            header_cell.setAttribute('data-timeslot', slot.rank)
-            first_row.append(header_cell)
+            let el = document.createElement('div')
+            el.classList.add("schedule-flex")
+            el.innerHTML = slot.name
+            el.setAttribute('data-timeslot', slot.rank)
+            year_row.append(el)
         })
-        table.append(first_row)
 
         yearsOfEducation.forEach(year=>{
-            let row = document.createElement('tr');
-            let first_cell = document.createElement('th')
-            first_cell.innerText = year+"e"
-            first_cell.classList.add("year-header")
-            first_cell.setAttribute('data-year', year)
+            let el = document.createElement('div')
+            el.classList.add("year-row","schedule-flex")
+            let year_cell = document.createElement('div')
+            year_cell.classList.add("schedule-flex", "header", "year-header")
+            year_cell.innerHTML = year
+            el.append(year_cell)
 
-            row.append(first_cell)
-
-            let container_cell = document.createElement('td');
-            container_cell.setAttribute('colspan', (timeslots.length).toString())
-            row.append(container_cell)
-            let year_table = document.createElement('table')
-            year_table.classList.add("year-table")
-            container_cell.append(year_table)
-            let base_row = document.createElement('tr');
-            year_table.append(base_row)
-            timeslots.forEach(slot=>{
-                let cell = document.createElement('td')
-                cell.setAttribute('data-timeslot', slot.rank)
-                base_row.append(cell)
-            })
-            table.append(row)
+            let content_cell = document.createElement('div')
+            content_cell.classList.add("schedule-content","schedule-flex")
+            el.append(content_cell)
+            let content_container = document.createElement('div')
+            content_container.classList.add("schedule-content-container")
+            content_container.id = "schedule-content-year-"+year
+            content_cell.append(content_container)
+            container.append(el)
         })
-        this.element.append(table)
+        this.element.append(container)
+    }
+
+    fillTable(){
+        let activities = []
+        let changes = []
+        let app_filtered =  Object.values(this.changesManager.appointments).filter(app => app.groupsInDepartments.length)
+
+        app_filtered.filter(app=> app.type === 'activity' && app.valid).forEach(appointment => {
+            appointment.groupsInDepartments.forEach(group_id => {
+                let group = this.changesManager.getGroupInDepartment(group_id)
+                let branch = this.changesManager.getDepartmentOfBranch(group.departmentOfBranch)
+                let i = appointment.startTimeSlot
+                while(i <= appointment.endTimeSlot){
+                    changes.push(new ChangesUIRecordClass(group, branch, i, appointment))
+                    i++;
+                }
+            })
+        })
+
+        app_filtered.filter(app=> app.type === 'lesson' && app.valid).forEach(appointment => {
+            appointment.groupsInDepartments.forEach(group_id => {
+                let group = this.changesManager.getGroupInDepartment(group_id)
+                let branch = this.changesManager.getDepartmentOfBranch(group.departmentOfBranch)
+                let i = appointment.startTimeSlot
+                while(i <= appointment.endTimeSlot){
+                    //filteren van dingen die tegelijk met activiteiten uitvallen
+                    if(changes.find(c => c.entity.id === group.id && c.period===i)){
+                        return;
+                    }
+
+                    changes.push(new ChangesUIRecordClass(group, branch, i, appointment))
+                    i++;
+                }
+            })
+        })
+        app_filtered.filter(app=> !app.valid).forEach(appointment => {
+            appointment.groupsInDepartments.forEach(group_id => {
+                let group = this.changesManager.getGroupInDepartment(group_id)
+                let branch = this.changesManager.getDepartmentOfBranch(group.departmentOfBranch)
+                let i = appointment.startTimeSlot
+                while(i <= appointment.endTimeSlot){
+                    //filteren van dingen die tegelijk met activiteiten uitvallen
+                    if(changes.find(c => c.entity.id === group.id && c.period===i)){
+                        return;
+                    }
+                    console.log(appointment)
+                    changes.push(new ChangesUIRecordClass(group, branch, i, appointment))
+                    i++;
+                }
+            })
+        })
 
 
-        console.log(timeslots)
+
+
+        console.log(changes)
+        changes.sort((a,b) =>{
+            if(a.appointment.type !== b.appointment.type){
+                if(a.appointment.type === 'lesson'){
+                    //activities voor lessen
+                    return 1
+                }
+                else{
+                    return -1
+                }
+            }
+            else if(a.entity !== b.entity){
+                if(a.entity.extendedName > b.entity.extendedName){
+                    return 1
+                }
+                else{
+                    return -1
+                }
+            }
+            return 0
+        }).forEach(change =>{
+            let container = document.querySelector("#schedule-content-year-"+change.departmentOfBranch.yearOfEducation)
+            container.append(change.getElement())
+
+        })
     }
 
 
@@ -104,7 +243,7 @@ $(document).ready(function () {
     var changesUiManager = new ChangesUiManager(document.querySelector("#content-container"), changesManager,param_date ? param_date : undefined)
     window.cm = changesUiManager
 
-    changesManager.waitUntilReady().then(m => m.loadData().then(a=>fillWholeTable(a.changedRecordHolderInstance.getRecords())).then(a=>changesUiManager.makeTable()))
+    changesManager.waitUntilReady().then(m => m.loadData().then(a=>fillWholeTable(a.changedRecordHolderInstance.getRecords())).then(a=>{changesUiManager.makeTable(); changesUiManager.fillTable()}))
 
 
     $("#title").text("Roosterwijzigingen " + changesUiManager.date.toLocaleString("nl-NL", {
