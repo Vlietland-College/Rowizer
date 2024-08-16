@@ -1,4 +1,5 @@
 import ChangedRecordHolder from "./lib/changedRecordHolder.js";
+import StudentsInDepartmentsManager from "../zermelo/lib/studentsInDepartments/studentsInDepartmentsManager.js";
 
 class Changes {
     #date;
@@ -13,6 +14,8 @@ class Changes {
 
     //klassen en clusters
     #groupsInDepartment;
+
+    #studentsInDepartments
 
     #yearsOfEducation;
 
@@ -103,6 +106,9 @@ class Changes {
     get appointments(){
         return this.#appointments
     }
+    get groupsInDepartments(){
+        return this.#groupsInDepartment
+    }
     get yearsOfEducation(){
         return this.#yearsOfEducation
     }
@@ -163,28 +169,46 @@ class Changes {
             branchOfSchool: this.#branchOfSchool.id,
             fields: ['id', 'departmentOfBranch', 'name', 'extendedName',"isMainGroup","isMentorGroup"]
         })
-        Object.values(this.#groupsInDepartment).forEach(group=>{
-                if(group.isMainGroup){this.#departments[group.departmentOfBranch].mainGroupsInDepartment.push(group.id)}
-                this.#departments[group.departmentOfBranch].groupsInDepartment.push(group.id)
 
+        Object.values(this.#groupsInDepartment).forEach(group=>{
+            if(group.isMainGroup){
+                this.#departments[group.departmentOfBranch].mainGroupsInDepartment.push(group.id)
+            }
+            if(group.isMentorGroup){
+                group.students = []
+            }
+            this.#departments[group.departmentOfBranch].groupsInDepartment.push(group.id)
         })
+
+
+        this.#studentsInDepartments = await this.connector.studentsInDepartments.get({
+            schoolInSchoolYear: this.#branchOfSchool.schoolInSchoolYear,
+            fields: ['student', 'departmentOfBranch', 'mentorGroup']
+        })
+
+        Object.values(this.#studentsInDepartments).forEach(student=>{
+            if(student.mentorGroup) {
+                this.#groupsInDepartment[student.mentorGroup].students.push(student.student)
+            }
+        })
+
         this.#timeslotNames = await this.connector.timeslotNames.get({schoolInSchoolYear: this.#branchOfSchool.schoolInSchoolYear})
         this.#timeslots = await this.connector.timeslots.get({schoolInSchoolYear:  this.#branchOfSchool.schoolInSchoolYear})
 
     }
 
     /**
-     * Waits until the branch and date are set, after that the changes can be retrieved
+     * Waits until the loadBranch and date are set, after that the changes can be retrieved
      * @return {Promise<unknown>}
      */
     waitUntilReady(){
         return new Promise((resolve) => {
-            if(this.#branchOfSchool && this.#date){
+            if(this.#timeslots && this.#date){
                 resolve(this);
             }
             let newt = function(resolve, obj){
                 setTimeout(() => {
-                    if(obj.#branchOfSchool && obj.#date){
+                    if(obj.#timeslots && obj.#date){
                         resolve(obj);
                     }
                     else{
@@ -229,7 +253,7 @@ class Changes {
                 set.sort((a,b) => {
                     return a - b
                 })
-                let can_be_combined = set.slice(0,-1).every((item,index)=> item.endTimeSlot !== set[index+1].startTimeSlot+1)
+                let can_be_combined = set.slice(0,-1).every((item,index)=> item.endTimeSlot+1 === set[index+1].startTimeSlot)
                 if(can_be_combined) {
                     let first_appointment = set.shift()
                     first_appointment.endTimeSlot = set.slice(-1)[0].endTimeSlot
@@ -250,7 +274,7 @@ class Changes {
         let common_data = {
             branchOfSchool: this.#branchOfSchool.id,
             type: 'lesson',
-            fields: ["id","appointmentInstance", "start", "end", "startTimeSlot", "endTimeSlot", "type", "groups", "groupsInDepartments", "locations", "cancelled", "cancelledReason", "modified", "teacherChanged", "groupChanged", "locationChanged", "timeChanged", "moved", "hidden", "changeDescription", "schedulerRemark", "lastModified", "base", "courses", "appointmentLastModified", "remark", "subjects", "teachers","valid"],
+            fields: ["id","appointmentInstance", "start", "end", "startTimeSlot", "endTimeSlot", "type", "groups", "groupsInDepartments", "locations", "cancelled", "cancelledReason", "modified", "teacherChanged", "groupChanged", "locationChanged", "timeChanged", "moved", "hidden", "changeDescription", "schedulerRemark", "lastModified", "base", "courses", "appointmentLastModified", "remark", "subjects", "teachers","valid", "students"],
             start: this.#start_time/1000,
             end:this.#end_time/1000
         }
@@ -285,8 +309,6 @@ class Changes {
             this.#combineSpansMultipleHours(this.#appointments)
         }
 
-
-
         Object.values(all_appointments).forEach(appointment=>{
             //bepalen of er hele afdelingen en/of jaarlagen in zitten
             //years heeft jaren als key en array met departments als value
@@ -315,6 +337,8 @@ class Changes {
                 }
                 departments[department.id].push(group.id)
             })
+
+
             Object.keys(departments).forEach(department_id=>{
                 department_id = Number(department_id)
                 let appointment_groups = departments[department_id].sort()
@@ -342,7 +366,7 @@ class Changes {
                 let departments_in_year = this.#yearsOfEducation[year].sort()
                 let departments_in_appointment = years[year].sort()
                 //if(departments_in_appointment.length > 1){debugger;}
-                if(departments_in_year.length === departments_in_appointment.length &&JSON.stringify(departments_in_year) === JSON.stringify(departments_in_appointment)){
+                if(departments_in_year.length === departments_in_appointment.length && JSON.stringify(departments_in_year) === JSON.stringify(departments_in_appointment)){
                     appointment.yearsComplete.push(year)
                     //debugger;
                 }
@@ -360,9 +384,6 @@ class Changes {
         return this
     }
 
-    get schoolYear(){
-       return this.#schoolYear
-    }
 }
 
 

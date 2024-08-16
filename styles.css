@@ -18,7 +18,12 @@ table,th,td {
 td.content-cell {
     align-content: start;
 }
-
+div.activity{
+    background-color: rgba(0,255,0,0.2);
+}
+div.appointment.new{
+    background-color: rgba(200,200,0,0.2);
+}
 ul{
     list-style: none;
     list-style-type: none;

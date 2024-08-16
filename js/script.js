@@ -1,5 +1,6 @@
 import { ZermeloApi } from "./zermelo/zermelo.js";
 import { Changes } from "./changes/changes.js";
+import groupInDepartments from "./zermelo/lib/groupInDepartments/groupInDepartmentsInterface.js";
 let params = new URLSearchParams(window.location.search)
 
 var zapi = new ZermeloApi({
@@ -8,10 +9,12 @@ var zapi = new ZermeloApi({
     branch: params.get("branch")
 });
 
+
 class ChangesUIRecord{
-    constructor(entity, department, period, appointment){
+    constructor(entity, department, period_start, period_end,appointment){
         this.entity = entity;
-        this.period = period;
+        this.period_start = period_start;
+        this.period_end = period_end
         this.departmentOfBranch = department
 
         this.appointment = appointment;
@@ -33,39 +36,81 @@ class ChangesUIRecord{
     #createElement(){
         let el = document.createElement("div");
         el.classList.add("appointment", this.appointment.type)
+        let this_morning = new Date(this.appointment.start*1000)
+        this_morning.setHours(7,0,0)
+
+        if(this_morning.getTime() < (this.appointment.lastModified*1000)){
+
+            console.log("new")
+            el.classList.add("new")
+        }
+
 
         //for activities use real times
-        el.style.setProperty('--start-hour', this.period);
-        el.style.setProperty('--end-hour', this.period);
-        el.innerText = this.#getInnerText()
+        el.style.setProperty('--start-hour', this.period_start);
+        el.style.setProperty('--end-hour', this.period_end);
+        el.innerText = this.getInnerText()
 
         this.element = el
         return this.element
     }
+    getInnerText(){
 
-    #getInnerText(){
-
-        if(this.appointment.type === 'lesson') {
-            if (!this.appointment.cancelled && this.appointment.valid) {
-                return this.entity.name + " " + this.appointment.subjects[0] + " " + this.appointment.teachers[0] + this.appointment.locations[0]
-            } else {
-                return this.entity.name + " vervalt"
-            }
-        }
-        else if(this.appointment.type === "activity"){
-            if (!this.appointment.cancelled && this.appointment.valid) {
-                return this.entity.name + " act " + this.appointment.subjects[0] + " " + this.appointment.teachers[0] + this.appointment.locations[0]
-            } else {
-                return this.entity.name + " act vervalt"
-            }
-        }
     }
+
 
 }
 
 class ChangesUIRecordClass extends ChangesUIRecord{
-    constructor(group, department, period, appointment) {
-        super(group, department, period, appointment);
+    constructor(group, department, period, period_end,appointment) {
+        super(group, department, period, period_end,appointment);
+    }
+
+    getInnerText(){
+        let str = ""
+        if (this.entity.isMainGroup) {
+            str += this.entity.name + " "
+        } else {
+            str += this.entity.extendedName + " "
+        }
+
+
+        if(!this.appointment.cancelled && this.appointment.valid){
+            //dit gaat door
+            if(this.entity.isMainGroup) {
+                str += this.appointment.subjects[0] + " "
+            }
+            str += this.appointment.teachers[0] + " "
+
+            if(this.appointment.locations.length){
+                str += this.appointment.locations[0]
+            }
+
+        }
+        else{
+            if(this.appointment.type === 'activity') {
+                str += "act vervalt"
+            }
+            if(this.appointment.type === 'lesson') {
+                str += "vervalt"
+            }
+        }
+        return str
+
+        if(this.appointment.type === 'lesson') {
+            if (!this.appointment.cancelled && this.appointment.valid) {
+                str += this.entity.readableName() + " "
+            } else {
+                return this.entity.readableName()  + " vervalt"
+            }
+        }
+        else if(this.appointment.type === "activity"){
+            if (!this.appointment.cancelled && this.appointment.valid) {
+                return this.entity.readableName() + " act " + this.appointment.subjects[0] + " " + this.appointment.teachers[0] + this.appointment.locations[0]
+            } else {
+                return  this.entity.readableName()  + " act vervalt"
+            }
+        }
     }
 }
 
@@ -141,55 +186,45 @@ class ChangesUiManager{
         let changes = []
         let app_filtered =  Object.values(this.changesManager.appointments).filter(app => app.groupsInDepartments.length)
 
+        let valid_activities = []
+
         app_filtered.filter(app=> app.type === 'activity' && app.valid).forEach(appointment => {
             appointment.groupsInDepartments.forEach(group_id => {
                 let group = this.changesManager.getGroupInDepartment(group_id)
                 let branch = this.changesManager.getDepartmentOfBranch(group.departmentOfBranch)
-                let i = appointment.startTimeSlot
-                while(i <= appointment.endTimeSlot){
-                    changes.push(new ChangesUIRecordClass(group, branch, i, appointment))
-                    i++;
-                }
+
+                changes.push(new ChangesUIRecordClass(group, branch, appointment.startTimeSlot, appointment.endTimeSlot,appointment))
             })
         })
 
-        app_filtered.filter(app=> app.type === 'lesson' && app.valid).forEach(appointment => {
-            appointment.groupsInDepartments.forEach(group_id => {
-                let group = this.changesManager.getGroupInDepartment(group_id)
-                let branch = this.changesManager.getDepartmentOfBranch(group.departmentOfBranch)
-                let i = appointment.startTimeSlot
-                while(i <= appointment.endTimeSlot){
-                    //filteren van dingen die tegelijk met activiteiten uitvallen
-                    if(changes.find(c => c.entity.id === group.id && c.period===i)){
-                        return;
+
+
+
+
+        let do_app = function(apps, cm){
+            apps.forEach(appointment => {
+                //alles wat niet uitvalt en valid is
+                appointment.groupsInDepartments.forEach(group_id => {
+                    let group = cm.changesManager.getGroupInDepartment(group_id)
+                    let branch = cm.changesManager.getDepartmentOfBranch(group.departmentOfBranch)
+                    let i = appointment.startTimeSlot
+                    while(i <= appointment.endTimeSlot){
+                        //filteren van dingen die tegelijk met activiteiten uitvallen
+                        if(changes.find(c => c.entity.id === group.id && c.period_start <=i && c.period_end >=i)){
+                            return;
+                        }
+
+                        changes.push(new ChangesUIRecordClass(group, branch, i, i, appointment))
+                        i++;
                     }
-
-                    changes.push(new ChangesUIRecordClass(group, branch, i, appointment))
-                    i++;
-                }
+                })
             })
-        })
-        app_filtered.filter(app=> !app.valid).forEach(appointment => {
-            appointment.groupsInDepartments.forEach(group_id => {
-                let group = this.changesManager.getGroupInDepartment(group_id)
-                let branch = this.changesManager.getDepartmentOfBranch(group.departmentOfBranch)
-                let i = appointment.startTimeSlot
-                while(i <= appointment.endTimeSlot){
-                    //filteren van dingen die tegelijk met activiteiten uitvallen
-                    if(changes.find(c => c.entity.id === group.id && c.period===i)){
-                        return;
-                    }
-                    console.log(appointment)
-                    changes.push(new ChangesUIRecordClass(group, branch, i, appointment))
-                    i++;
-                }
-            })
-        })
 
+        }
+        do_app(app_filtered.filter(app=> app.type === 'lesson' && app.valid && !app.cancelled), this)
+        do_app(app_filtered.filter(app=> app.type === 'lesson' && app.valid && app.cancelled), this)
+        do_app(app_filtered.filter(app=> !app.valid), this)
 
-
-
-        console.log(changes)
         changes.sort((a,b) =>{
             if(a.appointment.type !== b.appointment.type){
                 if(a.appointment.type === 'lesson'){

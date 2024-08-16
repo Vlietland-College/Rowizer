@@ -16,7 +16,7 @@ class Manager{
 
 class ManagerWithId extends Manager{
 
-    async get(options = {}, req_options = {cache:'force-cache'}){
+    async get(options = {}, req_options = {}){
         if(options.fields !== undefined && !options.fields.includes("id")){
             options.fields.push('id')
         }

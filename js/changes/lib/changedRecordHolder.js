@@ -16,7 +16,7 @@ export default class ChangedRecordHolder {
 
 
     add(item) {
-
+        // deze moet eruit
         item.groupsInDepartments.forEach((group, index) => {
 
             let rec_obj = this.find(group, item.startTimeSlot)

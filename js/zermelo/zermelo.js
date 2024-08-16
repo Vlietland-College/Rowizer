@@ -7,6 +7,7 @@ import GroupInDepartmentsManager from "./lib/groupInDepartments/groupInDepartmen
 import BranchesManager from "./lib/branches/branchesManager.js";
 import TimeslotsManager from "./lib/timeslots/timeslotsManager.js";
 import TimeslotsNamesManager from "./lib/timeslotNames/timeslotsNamesManager.js";
+import StudentsInDepartmentsManager from "./lib/studentsInDepartments/studentsInDepartmentsManager.js";
 
 
 
@@ -42,8 +43,7 @@ class ZermeloApi  {
 
         this.timeslots = new TimeslotsManager(this.#session);
         this.timeslotNames = new TimeslotsNamesManager(this.#session);
-
-
+        this.studentsInDepartments = new StudentsInDepartmentsManager(this.#session);
 
     }
 
