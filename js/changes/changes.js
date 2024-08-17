@@ -93,6 +93,8 @@ class Changes {
 
         }
         this.#yearsOfEducation = {}
+        //TODO: remove this
+        window.ad = this.#appointments
     }
 
     getGroupInDepartment(id){
@@ -267,10 +269,13 @@ class Changes {
                 }
             }
         })
+        return appointments
 
     }
 
     async loadData(){
+        //TODO: remove debug props
+
         let common_data = {
             branchOfSchool: this.#branchOfSchool.id,
             type: 'lesson',
@@ -278,10 +283,12 @@ class Changes {
             start: this.#start_time/1000,
             end:this.#end_time/1000
         }
+
+
         let category_promises = {}
         let categories_names = Object.keys(this.#appointmentCategories)
         categories_names.forEach(category_name =>{
-            category_promises[category_name] = this.connector.appointments.get({...common_data, ...this.#appointmentCategories[category_name].options})
+            category_promises[category_name] = this.connector.appointments.get({...common_data, ...this.#appointmentCategories[category_name].options, ...{modifiedSince: this.#appointmentCategories[category_name].lastModified}})
         }, this)
 
         let nameless_results = await Promise.all(Object.values(category_promises))
@@ -290,26 +297,25 @@ class Changes {
             category_results[name] = nameless_results[index]
         })
 
-        let all_appointments = {}
+        let modified_appointments = {}
 
         categories_names.forEach(category=>{
             category_results[category].forEach(appointment => {
-                all_appointments[appointment.id] = appointment
+                if(appointment.lastModified > window.pretendLikeIts){
+                    return;
+                }
+                modified_appointments[appointment.id] = appointment
                 if(appointment.lastModified > this.#appointmentCategories[category].lastModified){
                     this.#appointmentCategories[category].lastModified = appointment.lastModified
                 }
             })
         })
 
-        //TODO: remove this
-        window.ad = all_appointments
-
-        this.#appointments = all_appointments
         if(this.#mergeMultipleHourSpan){
-            this.#combineSpansMultipleHours(this.#appointments)
+            this.#combineSpansMultipleHours(modified_appointments)
         }
 
-        Object.values(all_appointments).forEach(appointment=>{
+        Object.values(modified_appointments).forEach(appointment=>{
             //bepalen of er hele afdelingen en/of jaarlagen in zitten
             //years heeft jaren als key en array met departments als value
             let years = {}
@@ -381,7 +387,8 @@ class Changes {
                 this.changedRecordHolderInstance.add(appointment)
             }
         })
-        return this
+        Object.assign(this.#appointments, modified_appointments)
+        return modified_appointments
     }
 
 }

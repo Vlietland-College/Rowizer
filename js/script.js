@@ -185,7 +185,7 @@ class ChangesUiManager{
         let activities = []
         let changes = []
         let app_filtered =  Object.values(this.changesManager.appointments).filter(app => app.groupsInDepartments.length)
-
+        //1717478720
         let valid_activities = []
 
         app_filtered.filter(app=> app.type === 'activity' && app.valid).forEach(appointment => {
@@ -251,6 +251,17 @@ class ChangesUiManager{
         })
     }
 
+    async refreshTable(){
+        //TODO: this is quick n dirty way to show the new changes
+        let changes = await this.changesManager.loadData()
+        if(Object.keys(changes).length){
+            this.element.innerHTML = ""
+            this.makeTable()
+            this.fillTable()
+        }
+
+    }
+
 
 }
 
@@ -258,9 +269,8 @@ class ChangesUiManager{
 
 $(document).ready(function () {
     console.log("loadedsdsdsd")
-
-
-
+    //TODO: remove this
+    //window.pretendLikeIts = 1717452000000/1000;
 
     let params = new URLSearchParams(window.location.search)
 
@@ -278,7 +288,7 @@ $(document).ready(function () {
     var changesUiManager = new ChangesUiManager(document.querySelector("#content-container"), changesManager,param_date ? param_date : undefined)
     window.cm = changesUiManager
 
-    changesManager.waitUntilReady().then(m => m.loadData().then(a=>fillWholeTable(a.changedRecordHolderInstance.getRecords())).then(a=>{changesUiManager.makeTable(); changesUiManager.fillTable()}))
+    changesManager.waitUntilReady().then(m => m.loadData().then(a=>fillWholeTable(changesManager.changedRecordHolderInstance.getRecords())).then(a=>{changesUiManager.makeTable(); changesUiManager.fillTable()}))
 
 
     $("#title").text("Roosterwijzigingen " + changesUiManager.date.toLocaleString("nl-NL", {
