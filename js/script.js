@@ -78,9 +78,18 @@ class ChangesUIRecordClass extends ChangesUIRecord{
         if(!this.appointment.cancelled && this.appointment.valid){
             //dit gaat door
             if(this.entity.isMainGroup) {
-                str += this.appointment.subjects[0] + " "
+                str += this.appointment.subjects[0].substring(0,6)
+                if(this.appointment.subjects.length > 1){
+                    str += "+"+(this.appointment.subjects.length - 1).toString()
+                }
+                str += " "
+
             }
-            str += this.appointment.teachers[0] + " "
+            str += this.appointment.teachers.slice(0,2).join(",")
+            if(this.appointment.teachers.length > 2){
+                str += "+"+(this.appointment.teachers.length - 1).toString()
+            }
+            str += " "
 
             if(this.appointment.locations.length){
                 str += this.appointment.locations[0]
@@ -96,21 +105,6 @@ class ChangesUIRecordClass extends ChangesUIRecord{
             }
         }
         return str
-
-        if(this.appointment.type === 'lesson') {
-            if (!this.appointment.cancelled && this.appointment.valid) {
-                str += this.entity.readableName() + " "
-            } else {
-                return this.entity.readableName()  + " vervalt"
-            }
-        }
-        else if(this.appointment.type === "activity"){
-            if (!this.appointment.cancelled && this.appointment.valid) {
-                return this.entity.readableName() + " act " + this.appointment.subjects[0] + " " + this.appointment.teachers[0] + this.appointment.locations[0]
-            } else {
-                return  this.entity.readableName()  + " act vervalt"
-            }
-        }
     }
 }
 
@@ -153,12 +147,17 @@ class ChangesUiManager{
         year_row.append(node)
         container.append(year_row)
 
+        let timeslots_box = document.createElement('div')
+        timeslots_box.classList.add("schedule-content-container")
+        timeslots_box.classList.add("timeslot-container")
+        timeslots_box.classList.add("schedule-flex")
+        year_row.append(timeslots_box)
         timeslots.forEach(slot=>{
             let el = document.createElement('div')
-            el.classList.add("schedule-flex")
+            el.classList.add("timeslot-header")
             el.innerHTML = slot.name
             el.setAttribute('data-timeslot', slot.rank)
-            year_row.append(el)
+            timeslots_box.append(el)
         })
 
         yearsOfEducation.forEach(year=>{
@@ -203,7 +202,6 @@ class ChangesUiManager{
 
         let do_app = function(apps, cm){
             apps.forEach(appointment => {
-                //alles wat niet uitvalt en valid is
                 appointment.groupsInDepartments.forEach(group_id => {
                     let group = cm.changesManager.getGroupInDepartment(group_id)
                     let branch = cm.changesManager.getDepartmentOfBranch(group.departmentOfBranch)
@@ -276,10 +274,6 @@ $(document).ready(function () {
 
     //portal: naam vh portal, token: api-token, branch: branchcode (vestigingscode)
 
-
-    var last_hour = 9;
-    const last_class = 6;
-
     let param_date = params.get("date");
     let param_branch = params.get("branch");
 
@@ -288,7 +282,7 @@ $(document).ready(function () {
     var changesUiManager = new ChangesUiManager(document.querySelector("#content-container"), changesManager,param_date ? param_date : undefined)
     window.cm = changesUiManager
 
-    changesManager.waitUntilReady().then(m => m.loadData().then(a=>fillWholeTable(changesManager.changedRecordHolderInstance.getRecords())).then(a=>{changesUiManager.makeTable(); changesUiManager.fillTable()}))
+    changesManager.waitUntilReady().then(m => m.loadData().then(a=>{changesUiManager.makeTable(); changesUiManager.fillTable()}))
 
 
     $("#title").text("Roosterwijzigingen " + changesUiManager.date.toLocaleString("nl-NL", {
@@ -297,31 +291,6 @@ $(document).ready(function () {
         month: 'long',
         day: 'numeric'
     }))
-
-
-
-    function fillWholeTable(records) {
-        return;
-
-        for (let hour = 1; hour <= last_hour; hour++) {
-            let this_hour_records = records.filter(item => item.period == hour)
-            for (let classyear = 1; classyear <= last_class; classyear++) {
-                let this_cell_records = this_hour_records.filter(item => item.classYear == classyear)
-                let html_list = $("tr:eq(" + classyear + ") td:eq(" + hour + ") ul")
-                this_cell_records.forEach(item => {
-                    let elements = item.itemHtml()
-                    elements.forEach(el => {
-                        let new_item = $("<li>").addClass("change-record").html(item.itemHtml())
-                        html_list.append(new_item)
-                    })
-
-                })
-
-            }
-        }
-    }
-
-
 
 
     // Your code to run since DOM is loaded and ready
