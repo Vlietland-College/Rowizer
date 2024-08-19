@@ -268,7 +268,7 @@ class ChangesUiManager{
 $(document).ready(function () {
     console.log("loadedsdsdsd")
     //TODO: remove this
-    //window.pretendLikeIts = 1717452000000/1000;
+    window.pretendLikeIts = 1717452000000/1000;
 
     let params = new URLSearchParams(window.location.search)
 
@@ -282,7 +282,7 @@ $(document).ready(function () {
     var changesUiManager = new ChangesUiManager(document.querySelector("#content-container"), changesManager,param_date ? param_date : undefined)
     window.cm = changesUiManager
 
-    changesManager.waitUntilReady().then(m => m.loadData().then(a=>{changesUiManager.makeTable(); changesUiManager.fillTable()}))
+    changesManager.waitUntilReady().then(m => m.loadData().then(a=>{changesUiManager.makeTable(); changesUiManager.fillTable();  setInterval(()=> changesUiManager.refreshTable(), 60*1000)}))
 
 
     $("#title").text("Roosterwijzigingen " + changesUiManager.date.toLocaleString("nl-NL", {

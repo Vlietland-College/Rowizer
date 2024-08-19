@@ -19,6 +19,7 @@ html{
 
 #content-container{
     flex-grow:1;
+    min-height:0;
 }
 
 #wrapper{
@@ -81,6 +82,8 @@ html{
 .year-row {
     min-height:0;
     overflow: overlay;
+    background-color: rgba(255,255,255,.5);
+    flex-basis: auto;
 }
 
 
@@ -103,10 +106,6 @@ html{
 
 }
 
-.year-row{
-    background-color: rgba(255,255,255,.5);
-    min-height:0
-}
 
 div.activity{
     background-color: rgb(0,255,0,0.2);
