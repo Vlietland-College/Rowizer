@@ -268,7 +268,7 @@ class ChangesUiManager{
 $(document).ready(function () {
     console.log("loadedsdsdsd")
     //TODO: remove this
-    window.pretendLikeIts = 1717452000000/1000;
+    //window.pretendLikeIts = 1717452000000/1000;
 
     let params = new URLSearchParams(window.location.search)
 
