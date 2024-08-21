@@ -4,6 +4,12 @@ With the growing call to ban phones from schools an ancient, almost forgotten co
 to view today's changes on a screen. This project aims to provide a simple, secure and free way to show relevant 
 information on screens. 
 
+Rowizer: 
+- Shows only relevant information[^1] - no endless lists of changes. 
+- Highlights new changes (made after 8AM)
+
+[^1]:  Cluster changes are currently always shown, in the future only relevant changes will appear.
+
 ![Screenshot of a live Rowizer example](/assets/img/example.png)
 
 ## Try a demo
@@ -28,3 +34,6 @@ Rowizer will automatically show today. If you want to try another day, use the d
 ```
 &date=19-6-2024
 ```
+
+### Use in production
+You are very welcome to use Rowizer using our Github-pages. Bear in mind that things can change at any moment - we are not responsible for any breaking changes. We recommend creating your own fork and using Github pages. 
