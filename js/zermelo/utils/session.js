@@ -8,10 +8,18 @@ class Session{
     }
 
     async request(path, options= {}, req_options = {}, version= 3) {
-        const reqHeaders = new Headers();
+
+        if(Object.keys(req_options).includes("headers")){
+            var reqHeaders = req_options.headers;
+        }
+        else {
+            var reqHeaders = new Headers();
+        }
+
         reqHeaders.append("Authorization", "Bearer " + this.token)
 
         let url = "https://" + this.portal + ".zportal.nl/api/v" + version + "/" + path + "?" + Object.entries(options).map(e => e.join('=')).join('&');
+
         let req = new Request(url, {
             method: "GET",
             headers: reqHeaders,
@@ -27,7 +35,7 @@ class Session{
             var result =  await fetch(req, req_options)
         }
         catch{
-            console.log("caught")
+
             throw new ZermeloError(data.response.status+" "+data.response.message);
         }
         /*if(!c_res) {
