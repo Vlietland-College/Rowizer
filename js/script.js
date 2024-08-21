@@ -26,8 +26,9 @@ $(document).ready(function () {
 
     let param_date = params.get("date");
     let param_branch = params.get("branch");
+    let param_ignore = params.get("departmentsIgnore");
 
-    let connector = new ZermeloConnector(zapi,param_date ? param_date : undefined, {branch: param_branch? param_branch : undefined, ignore_departments:['kopkl', 'vavo']})
+    let connector = new ZermeloConnector(zapi,param_date ? param_date : undefined, {branch: param_branch? param_branch : undefined, ignore_departments:param_ignore ? param_ignore.split(",") : []})
 
     var changesManager = new Changes(connector);
     var changesUiManager = new ChangesUiManager(document.querySelector("#content-container"), connector, changesManager)

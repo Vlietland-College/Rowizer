@@ -7,8 +7,11 @@ information on screens.
 Rowizer: 
 - Shows only relevant information[^1] - no endless lists of changes. 
 - Highlights new changes (made after 8AM)
+- Automatically fetches new changes from Zermelo
 
-[^1]:  Cluster changes are currently always shown, in the future only relevant changes will appear.
+
+
+[^1]:  Cluster changes are currently always shown, in the future only relevant changes will appear. Eg: If entl4 with students X and Y is cancelled but biol1 (taken by student X) and ges2 (student Y) are moved to that period, the entl4 cancellation will not be shown - all students know where they have to go.
 
 ![Screenshot of a live Rowizer example](/assets/img/example.png)
 
@@ -35,5 +38,18 @@ Rowizer will automatically show today. If you want to try another day, use the d
 &date=19-6-2024
 ```
 
+> [!WARNING]
+> Rowizer is designed from TV screens. The best result is achieved when using a 50 inch or lager 4K screen. 
+
 ### Use in production
 You are very welcome to use Rowizer using our Github-pages. Bear in mind that things can change at any moment - we are not responsible for any breaking changes. We recommend creating your own fork and using Github pages. 
+
+
+## URL Parameters
+|Parameter| Example value              | required           | Description                                                                                                                                                                      |
+|------|----------------------------|--------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|portal| j9qeq                      | x                  | The zportal ID (so the part before .zportal.nl                                                                                                                                   |
+|token| nNuNiNdkgYYZoGDTiGuBIqOWyM | x                  | The API-token [generated](https://support.zermelo.nl/guides/applicatiebeheerder/koppelingen/overige-koppelingen-2/koppeling-met-overige-externe-partijen) in your Zermelo portal |
+|branch| a                          | if multiple branches | The branch code (vestigingscode) found in Portal inrichting -> Vestigingen                                                                                                       |
+|date| 22-03-2024                 | | To test Rowizer you can use a different date                                                                                                                                     |
+|departmentsIgnore| kopkl,vavo                 ||Some departments should not be taken into consideration while determining if a whole education or yearOfEducation is present in an appointment.|
