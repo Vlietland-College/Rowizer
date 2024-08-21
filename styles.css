@@ -57,6 +57,7 @@ html{
 
 .year-row.header{
     max-height: 20px;
+    flex-shrink: 0;
 }
 
 .year-header{

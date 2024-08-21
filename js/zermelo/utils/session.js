@@ -1,4 +1,4 @@
-import { ZermeloError } from "./errors.js"
+import {ZermeloAuthorizationError, ZermeloError, ZermeloNetworkError} from "./errors.js"
 
 class Session{
     constructor(portal, token) {
@@ -23,14 +23,26 @@ class Session{
             let c_json = await c_res.json()
             console.log("from cache", c_res, c_json)
         }*/
-        let result = await fetch(req, req_options)
+        try {
+            var result =  await fetch(req, req_options)
+        }
+        catch{
+            console.log("caught")
+            throw new ZermeloError(data.response.status+" "+data.response.message);
+        }
         /*if(!c_res) {
             cache.put(url, result.clone());
         }*/
 
+
         let data = await result.json()
+
         if(data.response.status !== 200){
-            throw new ZermeloError(data.response.status+" "+data.response.message)
+            let error_type = ZermeloNetworkError
+            if(data.response.status === 403){
+                error_type = ZermeloAuthorizationError
+            }
+            throw new error_type(data.response.status+" "+data.response.message);
         }
         return data.response.data
     }

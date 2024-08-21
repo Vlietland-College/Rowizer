@@ -1,78 +1,39 @@
 import ChangedRecordHolder from "./lib/changedRecordHolder.js";
-import StudentsInDepartmentsManager from "../zermelo/lib/studentsInDepartments/studentsInDepartmentsManager.js";
 
 class Changes {
     #date;
     #appointments;
 
-    #branch;
-    #branchOfSchool;
+
     #schoolInYear
 
     //afdeling-jaarlaag (dus A3 is 1 department)
-    #departments;
+
 
     //klassen en clusters
-    #groupsInDepartment;
-
-    #studentsInDepartments
-
-    #yearsOfEducation;
-
-    #timeslots
-    #timeslotNames
-
-
-    #start_time;
-    #end_time;
-    #schoolYear;
 
     #appointmentCategories;
     #mergeMultipleHourSpan;
 
-    #ignoreDepartmentCodes;
 
-    constructor(options={}) {
-        this.connector = null
+    constructor(connector, options={}) {
+        this.connector = connector
+
         Object.assign(options, {
-            merge_multiple_hour_span: true,
-            ignore_departments: []
+            merge_multiple_hour_span: true
         })
+
         //bool, do yyou want to merge lessons that span more hours?
         this.#mergeMultipleHourSpan = options.merge_multiple_hour_span
 
         //array with strings with codes from departments we want to ignore to decide if a whole year has this appointment
-        this.#ignoreDepartmentCodes = options.ignore_departments
 
         this.#appointments = {}
 
-        if(Object.keys(options).includes("zermelo")){
-            this.connector = options.zermelo
-        }
+
         this.changedRecordHolderInstance = new ChangedRecordHolder()
 
-        if(!Object.keys(options).includes("branch") && options.branch){
-            this.connector.branches.get().then(branches=>{
-                if(branches.length !== 1){
-                    throw new Error("More than one branch, need to set branch")
-                }
-                this.#branch = branches[0]
-            })
-        }
-        else{
-           this.connector.branches.get({code:options.branch}).then(branches=>{
-                if(!branches.length){
-                    throw new Error("Branch"+options.branch+" is unknown")
-                }
-                else if(branches.length > 1){
-                    console.warn("There's more than one branch with this id?")
-                }
-                this.#branch = branches[0]
-                if(this.#date){
-                   this.#reloadBranchOfSchools()
-                }
-            })
-        }
+
         this.#appointmentCategories = {
             "activities": {
                 options: {type: 'activity'},
@@ -92,136 +53,17 @@ class Changes {
             }
 
         }
-        this.#yearsOfEducation = {}
+
         //TODO: remove this
         window.ad = this.#appointments
     }
 
-    getGroupInDepartment(id){
-        return this.#groupsInDepartment[id]
-    }
 
-    getDepartmentOfBranch(id){
-        return this.#departments[id]
-    }
 
     get appointments(){
         return this.#appointments
     }
-    get groupsInDepartments(){
-        return this.#groupsInDepartment
-    }
-    get yearsOfEducation(){
-        return this.#yearsOfEducation
-    }
 
-    get timeslots(){
-        return this.#timeslotNames
-    }
-
-    async setDate(date){
-        if(!(date instanceof Date)){
-            throw new TypeError("Invalid date format must be a valid date.")
-        }
-        this.#date = date
-        this.#start_time = this.#date.getTime()
-        this.#date.setHours(23, 59, 59)
-        this.#end_time = this.#date.getTime()
-        console.log(this.#start_time, this.#end_time)
-
-        let new_schoolYear =  this.#date.getMonth() < 7 ? this.#date.getFullYear() - 1 : this.#date.getFullYear()
-        if(new_schoolYear !== this.#schoolYear){
-            this.#schoolYear = new_schoolYear
-           if(!this.branchPromise && this.#branch){
-               await this.#reloadBranchOfSchools()
-           }
-        }
-    }
-    async #reloadBranchOfSchools(){
-        this.#yearsOfEducation = {}
-
-        let branches =await this.connector.branchesOfSchools.get({schoolYear:this.#schoolYear, branch: this.#branch.code})
-        let branches_keys =  Object.keys(branches)
-
-        if(!branches_keys.length){
-            throw new Error("BranchesOfSchools is unknown for this year")
-        }
-        else if(branches_keys.length > 1){
-            console.warn("There's more than one branch with this id for this year?")
-        }
-        this.#branchOfSchool = branches[branches_keys[0]]
-        this.#departments =  await this.connector.departmentsOfBranches.get({
-            branchOfSchool: this.#branchOfSchool.id,
-            fields: ['id', 'code', 'educationType', 'educations', 'weekTimeTable', 'yearOfEducation']
-        })
-        Object.values(this.#departments).forEach(department=>{
-
-            department.mainGroupsInDepartment = []
-            department.groupsInDepartment = []
-            if(department.yearOfEducation && !this.#ignoreDepartmentCodes.includes(department.code)){
-                let year = department.yearOfEducation
-                if(!this.#yearsOfEducation[year]){
-                    this.#yearsOfEducation[year] = []
-                }
-                this.#yearsOfEducation[year].push(department.id)
-            }
-        })
-
-        this.#groupsInDepartment = await this.connector.groupInDepartments.get({
-            branchOfSchool: this.#branchOfSchool.id,
-            fields: ['id', 'departmentOfBranch', 'name', 'extendedName',"isMainGroup","isMentorGroup"]
-        })
-
-        Object.values(this.#groupsInDepartment).forEach(group=>{
-            if(group.isMainGroup){
-                this.#departments[group.departmentOfBranch].mainGroupsInDepartment.push(group.id)
-            }
-            if(group.isMentorGroup){
-                group.students = []
-            }
-            this.#departments[group.departmentOfBranch].groupsInDepartment.push(group.id)
-        })
-
-
-        this.#studentsInDepartments = await this.connector.studentsInDepartments.get({
-            schoolInSchoolYear: this.#branchOfSchool.schoolInSchoolYear,
-            fields: ['student', 'departmentOfBranch', 'mentorGroup']
-        })
-
-        Object.values(this.#studentsInDepartments).forEach(student=>{
-            if(student.mentorGroup) {
-                this.#groupsInDepartment[student.mentorGroup].students.push(student.student)
-            }
-        })
-
-        this.#timeslotNames = await this.connector.timeslotNames.get({schoolInSchoolYear: this.#branchOfSchool.schoolInSchoolYear})
-        this.#timeslots = await this.connector.timeslots.get({schoolInSchoolYear:  this.#branchOfSchool.schoolInSchoolYear})
-
-    }
-
-    /**
-     * Waits until the loadBranch and date are set, after that the changes can be retrieved
-     * @return {Promise<unknown>}
-     */
-    waitUntilReady(){
-        return new Promise((resolve) => {
-            if(this.#timeslots && this.#date){
-                resolve(this);
-            }
-            let newt = function(resolve, obj){
-                setTimeout(() => {
-                    if(obj.#timeslots && obj.#date){
-                        resolve(obj);
-                    }
-                    else{
-                        newt(resolve, obj)
-                    }
-
-                }, 200);
-            }
-            newt(resolve, this)
-        });
-    }
 
     /**
      * Before version 24.07 lessons than span multiple timeslots were split up into different appointments. To anticipate this change, lessons that span multiple hours are combined into a single appointment.
@@ -277,18 +119,18 @@ class Changes {
         //TODO: remove debug props
 
         let common_data = {
-            branchOfSchool: this.#branchOfSchool.id,
+            branchOfSchool: this.connector.branch.id,
             type: 'lesson',
             fields: ["id","appointmentInstance", "start", "end", "startTimeSlot", "endTimeSlot", "type", "groups", "groupsInDepartments", "locations", "cancelled", "cancelledReason", "modified", "teacherChanged", "groupChanged", "locationChanged", "timeChanged", "moved", "hidden", "changeDescription", "schedulerRemark", "lastModified", "base", "courses", "appointmentLastModified", "remark", "subjects", "teachers","valid", "students"],
-            start: this.#start_time/1000,
-            end:this.#end_time/1000
+            start: this.connector.date.getStartOfDayTime()/1000,
+            end:this.connector.date.getEndOfDayTime()/1000
         }
 
 
         let category_promises = {}
         let categories_names = Object.keys(this.#appointmentCategories)
         categories_names.forEach(category_name =>{
-            category_promises[category_name] = this.connector.appointments.get({...common_data, ...this.#appointmentCategories[category_name].options, ...{modifiedSince: this.#appointmentCategories[category_name].lastModified}})
+            category_promises[category_name] = this.connector.api.appointments.get({...common_data, ...this.#appointmentCategories[category_name].options, ...{modifiedSince: this.#appointmentCategories[category_name].lastModified}})
         }, this)
 
         let nameless_results = await Promise.all(Object.values(category_promises))
@@ -329,14 +171,14 @@ class Changes {
             appointment.groupsWithoutCompleteDepartment = []
 
             appointment.groupsInDepartments.forEach(group_id=>{
-                let group = this.#groupsInDepartment[group_id]
+                let group = this.connector.groupsInDepartment[group_id]
                 if(group.isMainGroup){
                     appointment.groupsMain.push(group_id)
                 }else{
                     appointment.groupsOther.push(group_id)
                 }
 
-                let department = this.#departments[group.departmentOfBranch]
+                let department = this.connector.departments[group.departmentOfBranch]
 
                 if(!departments[department.id]){
                     departments[department.id] = []
@@ -348,7 +190,7 @@ class Changes {
             Object.keys(departments).forEach(department_id=>{
                 department_id = Number(department_id)
                 let appointment_groups = departments[department_id].sort()
-                let department = this.#departments[department_id];
+                let department = this.connector.departments[department_id];
                 let department_groups = department.mainGroupsInDepartment.sort()
                 if(appointment_groups.length === department_groups.length && JSON.stringify(appointment_groups) === JSON.stringify(department_groups)){
                     //console.log("whole department is added to this appointment")
@@ -369,7 +211,7 @@ class Changes {
             appointment.departmentsNotInCompleteYear = []
             Object.keys(years).forEach(year=>{
 
-                let departments_in_year = this.#yearsOfEducation[year].sort()
+                let departments_in_year = this.connector.yearsOfEducation[year].sort()
                 let departments_in_appointment = years[year].sort()
                 //if(departments_in_appointment.length > 1){debugger;}
                 if(departments_in_year.length === departments_in_appointment.length && JSON.stringify(departments_in_year) === JSON.stringify(departments_in_appointment)){

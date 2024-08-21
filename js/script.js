@@ -1,6 +1,10 @@
 import { ZermeloApi } from "./zermelo/zermelo.js";
 import { Changes } from "./changes/changes.js";
 import groupInDepartments from "./zermelo/lib/groupInDepartments/groupInDepartmentsInterface.js";
+import EmployeeAbsencesManager from "./zermelo/lib/employeeabsences/employeeAbsencesManager.js";
+import Absences from "./absences/absences.js";
+import {ZermeloAuthorizationError} from "./zermelo/utils/errors.js";
+import ZermeloConnector from "./connectors/zermeloConnector.js";
 let params = new URLSearchParams(window.location.search)
 
 var zapi = new ZermeloApi({
@@ -111,7 +115,7 @@ class ChangesUIRecordClass extends ChangesUIRecord{
 class ChangesUiManager{
     #start_time;
     #end_time
-    constructor(element,  manager, date = new Date().toLocaleString("nl-NL", {
+    constructor(element,  connector, manager, date = new Date().toLocaleString("nl-NL", {
         day: '2-digit',
         month: '2-digit',
         year: 'numeric',
@@ -119,21 +123,18 @@ class ChangesUiManager{
         this.element = element
         //changesmanager does the change models and so.
         this.changesManager = manager;
-
-        this.setDate(date)
+        this.connector = connector
+        this.setDate(connector.date)
 
     }
 
     setDate(date){
-        let date_parts = date.split("-");
-        this.date = new Date(date_parts[2], date_parts[1] - 1, date_parts[0], 0, 0)
-        this.changesManager.setDate(this.date)
-        this.table = null;
+       this.date = date
     }
 
     makeTable(){
-        let yearsOfEducation = Object.keys(this.changesManager.yearsOfEducation).sort()
-        let timeslots = this.changesManager.timeslots.sort((a,b)=>a.rank-b.rank)
+        let yearsOfEducation = Object.keys(this.connector.yearsOfEducation).sort()
+        let timeslots = this.connector.timeslots.sort((a,b)=>a.rank-b.rank)
 
         let container = document.createElement('div')
         container.classList.add("schedule-container", "schedule-flex")
@@ -189,8 +190,8 @@ class ChangesUiManager{
 
         app_filtered.filter(app=> app.type === 'activity' && app.valid).forEach(appointment => {
             appointment.groupsInDepartments.forEach(group_id => {
-                let group = this.changesManager.getGroupInDepartment(group_id)
-                let branch = this.changesManager.getDepartmentOfBranch(group.departmentOfBranch)
+                let group = this.connector.getGroupInDepartment(group_id)
+                let branch = this.connector.getDepartmentOfBranch(group.departmentOfBranch)
 
                 changes.push(new ChangesUIRecordClass(group, branch, appointment.startTimeSlot, appointment.endTimeSlot,appointment))
             })
@@ -203,8 +204,8 @@ class ChangesUiManager{
         let do_app = function(apps, cm){
             apps.forEach(appointment => {
                 appointment.groupsInDepartments.forEach(group_id => {
-                    let group = cm.changesManager.getGroupInDepartment(group_id)
-                    let branch = cm.changesManager.getDepartmentOfBranch(group.departmentOfBranch)
+                    let group = cm.connector.getGroupInDepartment(group_id)
+                    let branch = cm.connector.getDepartmentOfBranch(group.departmentOfBranch)
                     let i = appointment.startTimeSlot
                     while(i <= appointment.endTimeSlot){
                         //filteren van dingen die tegelijk met activiteiten uitvallen
@@ -277,12 +278,38 @@ $(document).ready(function () {
     let param_date = params.get("date");
     let param_branch = params.get("branch");
 
-    var changesManager = new Changes({zermelo:zapi, branch: param_branch? param_branch : undefined, ignore_departments:['kopkl', 'vavo']});
+    let connector = new ZermeloConnector(zapi,param_date ? param_date : undefined, {branch: param_branch? param_branch : undefined, ignore_departments:['kopkl', 'vavo']})
 
-    var changesUiManager = new ChangesUiManager(document.querySelector("#content-container"), changesManager,param_date ? param_date : undefined)
+    var changesManager = new Changes(connector);
+
+    var changesUiManager = new ChangesUiManager(document.querySelector("#content-container"), connector,changesManager,param_date ? param_date : undefined)
+
+    var absences = new Absences({zermelo:zapi})
     window.cm = changesUiManager
+    connector.waitUntilReady().then(a=>{
+        changesManager.loadData().then(cm => {
+            changesUiManager.makeTable();
+            changesUiManager.fillTable();
+        })
 
-    changesManager.waitUntilReady().then(m => m.loadData().then(a=>{changesUiManager.makeTable(); changesUiManager.fillTable();  setInterval(()=> changesUiManager.refreshTable(), 60*1000)}))
+    })
+    /*changesManager.waitUntilReady().then(m => m.loadData().then(a=>{
+        changesUiManager.makeTable();
+        changesUiManager.fillTable();
+        absences.setBranch(changesManager.branch);
+        absences.setDate(changesManager.date);
+        absences.loadAll().catch(err=>{
+            if(err instanceof ZermeloAuthorizationError){
+                console.log("No authorization for absences")
+            }
+            else {
+                throw err
+            }
+        });
+
+
+        setInterval(()=> changesUiManager.refreshTable(), 60*1000)
+    }))*/
 
 
     $("#title").text("Roosterwijzigingen " + changesUiManager.date.toLocaleString("nl-NL", {
