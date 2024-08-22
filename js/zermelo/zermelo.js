@@ -1,4 +1,6 @@
 import Session from "./utils/session.js";
+
+import {} from  "./utils/date.js";
 import SchoolsManager from "./lib/schools/schoolsManager.js";
 import AppointmentsManager from "./lib/appointments/appointmentsManager.js";
 import BranchesOfSchoolsManager from "./lib/branchesOfSchools/branchesOfSchoolsManager.js";
@@ -8,6 +10,7 @@ import BranchesManager from "./lib/branches/branchesManager.js";
 import TimeslotsManager from "./lib/timeslots/timeslotsManager.js";
 import TimeslotsNamesManager from "./lib/timeslotNames/timeslotsNamesManager.js";
 import StudentsInDepartmentsManager from "./lib/studentsInDepartments/studentsInDepartmentsManager.js";
+import EmployeeAbsencesManager from "./lib/employeeabsences/employeeAbsencesManager.js";
 
 
 
@@ -44,6 +47,8 @@ class ZermeloApi  {
         this.timeslots = new TimeslotsManager(this.#session);
         this.timeslotNames = new TimeslotsNamesManager(this.#session);
         this.studentsInDepartments = new StudentsInDepartmentsManager(this.#session);
+
+        this.employeeAbsences = new EmployeeAbsencesManager(this.#session);
 
     }
 
