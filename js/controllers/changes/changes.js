@@ -19,9 +19,13 @@ class Changes {
     constructor(connector, options={}) {
         this.connector = connector
 
-        Object.assign(options, {
-            merge_multiple_hour_span: true
-        })
+
+        options = {
+            ...{
+                merge_multiple_hour_span: true
+            },
+            ...options
+        }
 
         //bool, do yyou want to merge lessons that span more hours?
         this.#mergeMultipleHourSpan = options.merge_multiple_hour_span
@@ -31,7 +35,6 @@ class Changes {
         this.#appointments = {}
 
 
-        this.changedRecordHolderInstance = new ChangedRecordHolder()
 
 
         this.#appointmentCategories = {
@@ -63,7 +66,12 @@ class Changes {
     get appointments(){
         return this.#appointments
     }
-
+    reset(){
+        Object.keys(this.#appointmentCategories).forEach(key =>{
+            this.#appointmentCategories[key].lastModified = 0;
+        })
+        this.#appointments = {}
+    }
 
     /**
      * Before version 24.07 lessons than span multiple timeslots were split up into different appointments. To anticipate this change, lessons that span multiple hours are combined into a single appointment.
@@ -225,9 +233,7 @@ class Changes {
             })
 
 
-            if(appointment.groupsInDepartments.length){
-                this.changedRecordHolderInstance.add(appointment)
-            }
+
         })
         Object.assign(this.#appointments, modified_appointments)
         return modified_appointments

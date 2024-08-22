@@ -27,23 +27,65 @@ $(document).ready(function () {
     let param_date = params.get("date");
     let param_branch = params.get("branch");
     let param_ignore = params.get("departmentsIgnore");
+    let param_merge = params.get("mergeAppointments")
+
 
     let connector = new ZermeloConnector(zapi,param_date ? param_date : undefined, {branch: param_branch? param_branch : undefined, ignore_departments:param_ignore ? param_ignore.split(",") : []})
 
-    var changesManager = new Changes(connector);
+    var changesManager = new Changes(connector, {
+        merge_multiple_hour_span: !(param_merge && param_merge === "false")
+    });
     var changesUiManager = new ChangesUiManager(document.querySelector("#content-container"), connector, changesManager)
-
     var absences = new Absences(connector)
     window.cm = changesUiManager
+    window.zc = connector
+
+    let dayChanged = function(){
+        changesManager.reset()
+        changesUiManager.refreshTable()
+        $("#title").text("Roosterwijzigingen " + connector.date.toLocaleString("nl-NL", {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        }))
+    }
+    window.dc = dayChanged
+
     connector.waitUntilReady().then(a=>{
         changesManager.loadData().then(cm => {
             changesUiManager.makeTable();
             changesUiManager.fillTable();
-            setInterval(()=> changesUiManager.refreshTable(), 60*1000)
+            var last_checked_date = new Date();
+            setInterval(()=> {
+
+                let new_date = new Date();
+                if(last_checked_date.getDate() < new_date.getDate()){
+                    let diff = Math.round((new_date.getTime() - last_checked_date.getTime())/ (1000 * 3600 * 24));
+                    let new_date_obk = new Date(connector.date)
+                    new_date_obk.setDate(new_date_obk.getDate() + diff);
+                    last_checked_date = new_date;
+                    connector.setDate(new_date_obk).then(a=>{
+                        changesManager.reset()
+                        $("#title").text("Roosterwijzigingen " + connector.date.toLocaleString("nl-NL", {
+                            weekday: 'long',
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                        }))
+                    })
+
+                }
+                changesUiManager.refreshTable();
+            }, 5*60*1000)
         })
-        absences.loadAll().catch(err=>{
+        absences.loadAll().then(a=>{
+            //console.log(a)
+            //document.querySelector("#absences-container").style.display = null
+        }).catch(err=>{
             if(err instanceof ZermeloAuthorizationError){
                 console.log("No authorization for absences")
+
             }
             else {
                 throw err

@@ -32,7 +32,14 @@ export default class Absences {
                 this.#lastModified = absence.lastModified
             }
         })
-        let valid_absences = Object.values(absences).filter(abs=> abs.start < end && abs.end > start)
+        //FIXME: the first filter can be removed if If-Modified-Since header works..
+        let valid_absences = Object.values(absences).filter(abs=>abs.lastModified>this.#lastModified).filter(abs=> abs.start < end && abs.end > start)
+
+        Object.values(absences).forEach(absence =>{
+            if(absence.lastModified > this.#lastModified){
+                this.#lastModified = absence.lastModified
+            }
+        })
 
         valid_absences.forEach(abs=>{console.log(new Date(abs.start*1000).toString() + " - " + new Date(abs.end*1000).toString())})
     }

@@ -3,13 +3,13 @@
 <head>
     <base target="_top">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.0/jquery.min.js"></script>
-    <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.13.2/themes/smoothness/jquery-ui.css">
+    <link href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.13.2/themes/smoothness/jquery-ui.css" rel="stylesheet">
     <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.13.2/jquery-ui.min.js"></script>
-    <script type="module" src="js/script.js"></script>
-    <script type="module" src="js/clock.js"></script>
+    <script src="js/script.js" type="module"></script>
+    <script src="js/clock.js" type="module"></script>
 
 
-    <link rel="stylesheet" href="styles.css">
+    <link href="styles.css" rel="stylesheet">
 </head>
 
 <body>
@@ -17,13 +17,17 @@
 <style>
 
 </style>
-<div id="wrapper" class="flex">
-<div class="flex flex-fill">
-    <div id="title" class="flex"></div>
-    <div id="clock" class="flex">0:00:00</div>
-</div>
-<div id="content-container" class="flex flex-fill">
-</div>
+<div class="flex" id="wrapper">
+    <div class="flex flex-fill">
+        <div class="flex" id="title"></div>
+        <div class="flex" id="clock">0:00:00</div>
+    </div>
+    <div style="display:none;" class="flex padding-standard content-background"  id="absences-container">
+        Afwezig: <div style="display:contents">bar, bak, bas</div>
+
+    </div>
+    <div class="flex flex-fill" id="content-container">
+    </div>
 </div>
 </body>
 
