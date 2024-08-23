@@ -4,7 +4,8 @@ class Session{
     constructor(portal, token) {
         this.portal = portal;
         this.token = token;
-        this.cache = window.caches.open("zapi")
+        //gobright has no window.caches
+        //this.cache = window.caches.open("zapi")
     }
 
     async request(path, options= {}, req_options = {}, version= 3) {
