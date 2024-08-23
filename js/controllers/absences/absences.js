@@ -3,20 +3,23 @@ import AbsenceEntity from "./absenceEntity.js";
 export default class Absences {
     #lastModified;
     #absences;
+    #lastValidAbsences;
 
     constructor(connector, options={}) {
         this.connector = connector
         this.#absences = {}
-        Object.assign(options, {
-            //default options
-        })
+        this.#lastValidAbsences = ""
+
         this.#lastModified = 0;
 
     }
     get absences(){
         return this.#absences
     }
-
+    reset(){
+        this.#lastModified = 0;
+        this.#absences = {};
+    }
 
     async loadAll(){
         let weekyear = this.connector.date.getFullYear().toString()+this.connector.date.getWeekNumber()
@@ -34,9 +37,18 @@ export default class Absences {
         let start = this.connector.date.getStartOfDayTime()/1000
         let end = this.connector.date.getEndOfDayTime()/1000
 
-        //FIXME: the first filter can be removed if If-Modified-Since header works..
+        //FIXME: if-modified-since doenst work. Bear in mind: removed absences should also be noticed
 
-        let valid_absences= Object.values(absences).filter(abs=>abs.lastModified>this.#lastModified).filter(abs=> abs.start < end && abs.end > start)
+        let valid_absences= Object.values(absences).filter(abs=> abs.start < end && abs.end > start)
+        let absencesToCheck = JSON.stringify(valid_absences.sort((a,b)=> a.id < b.id))
+        if(this.#lastValidAbsences === absencesToCheck){
+            return []
+        }
+        else{
+            this.#lastValidAbsences = absencesToCheck
+        }
+
+        //let modified_absences = valid_absences.filter(abs=>abs.lastModified>this.#lastModified)
 
         Object.values(absences).forEach(absence =>{
             if(absence.lastModified > this.#lastModified){
@@ -60,21 +72,13 @@ export default class Absences {
                     }
                     return to_return
                 })
+                if(endSlot !== timeslots.at(-1)){
+                    //if absence ends during the last timeslot assume until end of day
+                    abs.endSlot = endSlot
+                }
 
-                abs.endSlot = endSlot
-                //console.log("ends before last hour", abs.endSlot, new Date(abs.end*1000))
             }
-            /*let when_text = ""
-            if(abs.endSlot && abs.startSlot){
-                when_text = "("+abs.startSlot.timeSlotName.rank+"-"+abs.endSlot.timeSlotName.rank+")"
-            }
-            else if(abs.endSlot) {
-                when_text = "(t/m "+abs.endSlot.timeSlotName.rank+")"
-            }
-            else if(abs.startSlot){
-                when_text = "(va "+abs.startSlot.timeSlotName.rank+")"
-            }
-            console.log(abs.employee + (when_text ? when_text : "" + when_text), abs)*/
+
             valid_absences.forEach(abs=>this.#absences[abs.id] = abs)
         })
         return valid_absences

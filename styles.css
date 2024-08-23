@@ -124,13 +124,18 @@ div.appointment.new{
 }
 
 /**afwezigen**/
-.absence:not(:last-child) {
-    margin-right: 5px;
-}
+
 .absence:not(:last-child)::after {
     content:" -"
 }
 .absence:first-child {
     margin-left: 5px;
+}
+
+#absences-container > div{
+    flex-direction: row;
+    flex-wrap: wrap;
+    row-gap: 3px;
+    column-gap: 3px;
 }
 

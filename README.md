@@ -9,6 +9,7 @@ Rowizer:
 - Highlights new changes (made after 8AM)
 - Always shows activities in green 
 - Automatically fetches new changes from Zermelo
+- Shows absent teachers 
 
 
 

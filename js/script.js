@@ -79,16 +79,17 @@ $(document).ready(function () {
                             month: 'long',
                             day: 'numeric'
                         }))
+                        absences.reset()
+
                     })
 
                 }
                 changesUiManager.refreshTable();
+                absencesUiManager.refresh();
             }, 5*60*1000)
         })
         absencesUiManager.refresh().then(a=>{
-            //console.log(a)
             document.querySelector("#absences-container").style.display = null
-            //absencesUiManager.refresh()
         }).catch(err=>{
             if(err instanceof ZermeloAuthorizationError){
                 console.log("No authorization for absences")

@@ -127,7 +127,6 @@ export class ChangesUiManager {
     async refreshTable() {
         //TODO: this is quick n dirty way to show the new changes
         let changes = await this.changesManager.loadData()
-        console.log(changes)
         if (Object.keys(changes).length) {
             this.element.innerHTML = ""
             this.makeTable()

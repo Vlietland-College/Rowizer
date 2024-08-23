@@ -16,6 +16,7 @@ export class AbsencesUiManager {
         absences_ui_items.forEach(abui=> this.element.append(abui.getElement()))
     }
 
+
     async refresh() {
         //TODO: this is quick n dirty way to show the new changes
         let changes = await this.absencesManager.loadAll()
