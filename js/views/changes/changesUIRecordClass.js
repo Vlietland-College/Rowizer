@@ -16,14 +16,21 @@ export default class ChangesUIRecordClass extends ChangesUIRecord {
 
         if (!this.appointment.cancelled && this.appointment.valid) {
             //dit gaat door
-            if (this.entity.isMainGroup) {
-                str += this.appointment.subjects[0].substring(0, 6)
-                if (this.appointment.subjects.length > 1) {
-                    str += "+" + (this.appointment.subjects.length - 1).toString()
-                }
+            if(this.appointment.type === "activity"){
+                str += this.appointment.subjects[0]
                 str += " "
 
+            } else {
+                if (this.entity.isMainGroup) {
+                    str += this.appointment.subjects[0].substring(0, 6)
+                    if (this.appointment.subjects.length > 1) {
+                        str += "+" + (this.appointment.subjects.length - 1).toString()
+                    }
+                    str += " "
+                }
+
             }
+
             str += this.appointment.teachers.slice(0, 2).join(",")
             if (this.appointment.teachers.length > 2) {
                 str += "+" + (this.appointment.teachers.length - 1).toString()

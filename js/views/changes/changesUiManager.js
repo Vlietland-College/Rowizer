@@ -17,7 +17,7 @@ export class ChangesUiManager {
 
     makeTable() {
         let yearsOfEducation = Object.keys(this.connector.yearsOfEducation).sort()
-        let timeslots = this.connector.timeslots.sort((a, b) => a.rank - b.rank)
+        let timeslots = Object.values(this.connector.timeslots).sort((a, b) => a.rank - b.rank)
 
         let container = document.createElement('div')
         container.classList.add("schedule-container", "schedule-flex")
@@ -127,7 +127,6 @@ export class ChangesUiManager {
     async refreshTable() {
         //TODO: this is quick n dirty way to show the new changes
         let changes = await this.changesManager.loadData()
-        console.log(changes)
         if (Object.keys(changes).length) {
             this.element.innerHTML = ""
             this.makeTable()
