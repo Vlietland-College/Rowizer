@@ -85,10 +85,13 @@ $(document).ready(function () {
 
                 }
                 changesUiManager.refreshTable();
-                absencesUiManager.refresh();
+
             }, 5*60*1000)
         })
         absencesUiManager.refresh().then(a=>{
+            setInterval(()=>{
+                absencesUiManager.refresh();
+            }, 5*60*1000)
             document.querySelector("#absences-container").style.display = null
         }).catch(err=>{
             if(err instanceof ZermeloAuthorizationError){
