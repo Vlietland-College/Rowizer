@@ -4,6 +4,8 @@ import Absences from "./controllers/absences/absences.js";
 import {ZermeloAuthorizationError} from "./zermelo/utils/errors.js";
 import ZermeloConnector from "./connectors/zermeloConnector.js";
 import {ChangesUiManager} from "./views/changes/changesUiManager.js";
+import AbsenceEntity from "./controllers/absences/absenceEntity.js";
+import {AbsencesUiManager} from "./views/absences/absencesUiManager.js";
 
 let params = new URLSearchParams(window.location.search)
 
@@ -31,12 +33,16 @@ $(document).ready(function () {
 
 
     let connector = new ZermeloConnector(zapi,param_date ? param_date : undefined, {branch: param_branch? param_branch : undefined, ignore_departments:param_ignore ? param_ignore.split(",") : []})
+    AbsenceEntity.Connector = connector
 
     var changesManager = new Changes(connector, {
         merge_multiple_hour_span: !(param_merge && param_merge === "false")
     });
     var changesUiManager = new ChangesUiManager(document.querySelector("#content-container"), connector, changesManager)
+
     var absences = new Absences(connector)
+    var absencesUiManager = new AbsencesUiManager(document.querySelector("#absences-container>div"),connector,absences);
+
     window.cm = changesUiManager
     window.zc = connector
 
@@ -79,9 +85,10 @@ $(document).ready(function () {
                 changesUiManager.refreshTable();
             }, 5*60*1000)
         })
-        absences.loadAll().then(a=>{
+        absencesUiManager.refresh().then(a=>{
             //console.log(a)
-            //document.querySelector("#absences-container").style.display = null
+            document.querySelector("#absences-container").style.display = null
+            //absencesUiManager.refresh()
         }).catch(err=>{
             if(err instanceof ZermeloAuthorizationError){
                 console.log("No authorization for absences")

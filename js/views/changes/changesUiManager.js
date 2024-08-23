@@ -17,7 +17,7 @@ export class ChangesUiManager {
 
     makeTable() {
         let yearsOfEducation = Object.keys(this.connector.yearsOfEducation).sort()
-        let timeslots = this.connector.timeslots.sort((a, b) => a.rank - b.rank)
+        let timeslots = Object.values(this.connector.timeslots).sort((a, b) => a.rank - b.rank)
 
         let container = document.createElement('div')
         container.classList.add("schedule-container", "schedule-flex")

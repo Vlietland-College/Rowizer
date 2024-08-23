@@ -1,7 +1,7 @@
-import { Manager } from "../manager.js";
+import { ManagerWithId} from "../manager.js";
 import Timeslot from "./timeslotInterface.js";
 
-class TimeslotsManager extends Manager{
+class TimeslotsManager extends ManagerWithId{
     endpoint = "timeslots";
     interface = Timeslot;
 }

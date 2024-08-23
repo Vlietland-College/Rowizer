@@ -11,6 +11,10 @@ import TimeslotsManager from "./lib/timeslots/timeslotsManager.js";
 import TimeslotsNamesManager from "./lib/timeslotNames/timeslotsNamesManager.js";
 import StudentsInDepartmentsManager from "./lib/studentsInDepartments/studentsInDepartmentsManager.js";
 import EmployeeAbsencesManager from "./lib/employeeabsences/employeeAbsencesManager.js";
+import DaytimetablesManager from "./lib/daytimetables/daytimetablesManager.js";
+import RealizedweektimetablesManager from "./lib/realizedweektimetables/realizedweektimetablesManager.js";
+import TimetableoverridesManager from "./lib/timetableoverrides/timetableoverridesManager.js";
+import WeektimetablesManager from "./lib/weektimetables/weektimetablesManager.js";
 
 
 
@@ -46,9 +50,18 @@ class ZermeloApi  {
 
         this.timeslots = new TimeslotsManager(this.#session);
         this.timeslotNames = new TimeslotsNamesManager(this.#session);
+
+
+        this.daytimetables = new DaytimetablesManager(this.#session);
+        this.realizedweektimetables = new RealizedweektimetablesManager(this.#session);
+        this.weektimetables = new WeektimetablesManager(this.#session);
+        this.timetableoverrides = new TimetableoverridesManager(this.#session);
+
+
         this.studentsInDepartments = new StudentsInDepartmentsManager(this.#session);
 
         this.employeeAbsences = new EmployeeAbsencesManager(this.#session);
+
 
     }
 
