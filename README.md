@@ -25,6 +25,8 @@ So, you're an BIP or ASP and would like to try Rowizer? It will only take a minu
 
 ### Get an API-token
 [Zermelo has written a nice how-to](https://support.zermelo.nl/guides/applicatiebeheerder/koppelingen/overige-koppelingen-2/koppeling-met-overige-externe-partijen#stap_1_gebruiker_toevoegen)! 
+> [!TIP]
+> If you don't want to show the absent teachers don't add the "Afwezigen" authorization. Rowizer detects this automatically
 
 ### URL Parameters for testing
 All settings are done by using URL-parameters. Only two (or three, if your school has multiple branches) are really needed to start: the token and the portal id (the part before .zportal.nl)
