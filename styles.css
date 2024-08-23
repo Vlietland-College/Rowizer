@@ -81,22 +81,29 @@ html{
 }
 
 .schedule-content{
-    overflow: scroll;
-    -ms-overflow-style: none;  /* IE and Edge */
-    scrollbar-width: none;  /* Firefox */
+    overflow-y: scroll;
+    /*-ms-overflow-style: none;
+    scrollbar-width: none;  */
 }
 .year-row::-webkit-scrollbar {
-    display: none;
+    /*display: none;*/
+    width: 0px;
+    background: transparent; /* make scrollbar transparent */
 }
 .year-row {
     min-height:0;
-    overflow: overlay;
+    overflow-y: overlay;
     background-color: rgba(255,255,255,.5);
     flex-basis: auto;
+}
+.schedule-content{
+    margin-right: -50px; /* Maximum width of scrollbar */
+    padding-right: 50px; /* Maximum width of scrollbar */
 }
 
 
 .year-content-subcontainer{
+    margin-right: -50px;
     display: grid;
     grid-auto-flow: row dense;
     grid-column: 1 / calc(var(--timeslots) + 1);
