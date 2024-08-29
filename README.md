@@ -18,7 +18,7 @@ Rowizer:
 ![Screenshot of a live Rowizer example](/assets/img/example.png)
 
 ## Try a demo
-[Try a live demo!](https://vlietland-college.github.io/Rowizer?token=rbcbl3t3c72923io6amor3uj20&portal=j9qeq&date=19-6-2024&branch=a). The data is fetched from my development portal. 
+[Try a live demo!](https://vlietland-college.github.io/Rowizer?token=2dj7g4pjs197hm263rmbq6m9i2&portal=j9qeq&date=19-6-2024&branch=a). The data is fetched from my development portal. 
 
 ## How to use?
 So, you're an BIP or ASP and would like to try Rowizer? It will only take a minute and is completely free! And, since the application runs 100% in-browser, no data is sent to any servers (well, except Zermelo, but we trust them) so no need for any signatures!
