@@ -83,11 +83,11 @@ html{
 
 .schedule-content{
     overflow-y: scroll;
-    /*-ms-overflow-style: none;
-    scrollbar-width: none;  */
+    -ms-overflow-style: none;
+    scrollbar-width: none;
 }
 .year-row::-webkit-scrollbar {
-    /*display: none;*/
+    display: none;
     width: 0px;
     background: transparent; /* make scrollbar transparent */
 }

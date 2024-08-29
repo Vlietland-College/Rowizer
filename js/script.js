@@ -114,6 +114,10 @@ $(document).ready(function () {
         day: 'numeric'
     }))
 
+    /*$( window ).on( "resize", function() {
+        console.log("resize")
+    } );*/
+
 
     // Your code to run since DOM is loaded and ready
 });
