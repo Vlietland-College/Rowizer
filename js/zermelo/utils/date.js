@@ -23,3 +23,7 @@ Date.prototype.getEndOfDayTime = function(){
     date.setHours(23,59,59)
     return date.getTime()
 };
+
+Date.prototype.isWeekDay= function(){
+    return 0 < this.getDay() && this.getDay() < 6
+}

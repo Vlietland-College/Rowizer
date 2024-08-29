@@ -41,9 +41,6 @@ export default class ZermeloConnector extends connector {
         this.#timeslotNames = []
         this.#timeslots = []
 
-        let firstLoad = function(){
-
-        }
 
         if(!Object.keys(options).includes("branch") && !options.branch){
             this.api.branches.get().then(branches=>{
@@ -210,6 +207,7 @@ export default class ZermeloConnector extends connector {
      */
     getTodayTimeSlots(){
         //FIXME: multiple departmensOfBranch can have different timetables
+
         let realized_table = this.#dayTimeTables[Object.values(this.#realizedWeekTimeTables)[0][this.#date.toLocaleDateString("en-EN", { weekday: 'long' }).toLowerCase()]]
         return realized_table.timeSlots.map(slot_id=> {
             let slot =  this.#timeslots[slot_id]

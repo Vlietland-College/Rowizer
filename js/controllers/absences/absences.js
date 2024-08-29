@@ -22,6 +22,9 @@ export default class Absences {
     }
 
     async loadAll(){
+        if(!this.connector.date.isWeekDay()){
+            return []
+        }
         let weekyear = this.connector.date.getFullYear().toString()+this.connector.date.getWeekNumber()
         let headers = new Headers();
         headers.append("If-Modified-Since", new Date(this.#lastModified*1000).toUTCString())
@@ -57,6 +60,7 @@ export default class Absences {
         })
 
         let timeslots = this.connector.getTodayTimeSlots()
+
 
         valid_absences.forEach(abs=>{
             this.#absences[abs.id] = new AbsenceEntity(abs)
