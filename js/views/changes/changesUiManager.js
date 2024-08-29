@@ -8,6 +8,7 @@ export class ChangesUiManager {
         this.changesManager = manager;
         this.connector = connector
         this.setDate(connector.date)
+        this.scroller = new ChangesUIScroller()
 
     }
 
@@ -62,6 +63,7 @@ export class ChangesUiManager {
             container.append(el)
         })
         this.element.append(container)
+        this.scroller.start()
     }
 
     fillTable() {
@@ -128,12 +130,53 @@ export class ChangesUiManager {
         //TODO: this is quick n dirty way to show the new changes
         let changes = await this.changesManager.loadData()
         if (Object.keys(changes).length) {
+            this.scroller.stop()
             this.element.innerHTML = ""
             this.makeTable()
             this.fillTable()
+
         }
 
     }
+}
 
+class ChangesUIScroller{
+    constructor() {
+        this.largest = 0
+        this.timeout = undefined;
+    }
 
+    start(){
+        this.reset()
+        let animate = function(largest){
+            let duration = (largest.scrollHeight - largest.clientHeight)*150
+            $(".schedule-content").animate({scrollTop: largest.scrollHeight - largest.clientHeight}, {duration: duration}).promise().then(()=>
+                {
+                    setTimeout(()=>{
+
+                        $(".schedule-content").animate({scrollTop: 0}, {duration: 300}).promise().done(()=>animate(largest))
+
+                    },1000)
+                }
+            );
+
+        }
+        animate(this.largest);
+    }
+
+    stop(){
+        $(".schedule-content").stop()
+    }
+
+    reset(){
+        this.largest = undefined;
+        $(".schedule-content").each((index, el) => {
+            if(this.largest === undefined){
+                this.largest = el
+            }
+            else if (this.largest.scrollHeight < el.scrollHeight) {
+                this.largest = el.scrollHeight
+            }
+        });
+    }
 }

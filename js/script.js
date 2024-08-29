@@ -114,9 +114,12 @@ $(document).ready(function () {
         day: 'numeric'
     }))
 
-    /*$( window ).on( "resize", function() {
+
+    $( window ).on( "resize", function() {
         console.log("resize")
-    } );*/
+        //also keep in mind the height of the resized window, scrollheigt-height is what we need to scroll
+
+    } );
 
 
     // Your code to run since DOM is loaded and ready
