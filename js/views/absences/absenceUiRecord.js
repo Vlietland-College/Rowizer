@@ -16,7 +16,12 @@ export default class AbsenceUiRecord {
         el.classList.add("absence")
         let when_text = ""
         if(this.absence.endSlot && this.absence.startSlot){
-           when_text = "("+this.absence.startSlot.timeSlotName.rank+"-"+this.absence.endSlot.timeSlotName.rank+")"
+            if(this.absence.endSlot === this.absence.startSlot){
+                when_text = "("+this.absence.startSlot.timeSlotName.rank+")"
+            }
+            else {
+                when_text = "(" + this.absence.startSlot.timeSlotName.rank + "-" + this.absence.endSlot.timeSlotName.rank + ")"
+            }
         }
         else if(this.absence.endSlot) {
            when_text = "(t/m "+this.absence.endSlot.timeSlotName.rank+")"
