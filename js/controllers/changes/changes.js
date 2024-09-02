@@ -103,7 +103,7 @@ class Changes {
 
             if(set.length > 1 ){
                 set.sort((a,b) => {
-                    return a - b
+                    return a.startTimeSlot - b.startTimeSlot
                 })
                 let can_be_combined = set.slice(0,-1).every((item,index)=> item.endTimeSlot+1 === set[index+1].startTimeSlot)
                 if(can_be_combined) {

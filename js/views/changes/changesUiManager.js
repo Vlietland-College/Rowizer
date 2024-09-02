@@ -71,14 +71,7 @@ export class ChangesUiManager {
         let app_filtered = Object.values(this.changesManager.appointments).filter(app => app.groupsInDepartments.length)
 
 
-        app_filtered.filter(app => app.type === 'activity' && app.valid).forEach(appointment => {
-            appointment.groupsInDepartments.forEach(group_id => {
-                let group = this.connector.getGroupInDepartment(group_id)
-                let branch = this.connector.getDepartmentOfBranch(group.departmentOfBranch)
-
-                changes.push(new ChangesUIRecordClass(group, branch, appointment.startTimeSlot, appointment.endTimeSlot, appointment))
-            })
-        })
+        
 
         let do_app = function (apps, cm) {
             apps.forEach(appointment => {
@@ -86,22 +79,38 @@ export class ChangesUiManager {
                     let group = cm.connector.getGroupInDepartment(group_id)
                     let branch = cm.connector.getDepartmentOfBranch(group.departmentOfBranch)
                     let i = appointment.startTimeSlot
-                    while (i <= appointment.endTimeSlot) {
-                        //filteren van dingen die tegelijk met activiteiten uitvallen
-                        if (changes.find(c => c.entity.id === group.id && c.period_start <= i && c.period_end >= i)) {
+
+
+
+                    if(appointment.type === "activity"){
+                        if (appointment.cancelled && changes.find(c => c.entity.id === group.id && c.period_start <= appointment.startTimeSlot && c.period_end >= appointment.endTimeSlot)){
                             return;
                         }
+                        changes.push(new ChangesUIRecordClass(group, branch, appointment.startTimeSlot, appointment.endTimeSlot, appointment))
 
-                        changes.push(new ChangesUIRecordClass(group, branch, i, i, appointment))
-                        i++;
+                    }
+                    else {
+                        while (i <= appointment.endTimeSlot) {
+                            //filteren van dingen die tegelijk met activiteiten uitvallen
+                            if (changes.find(c => c.entity.id === group.id && c.period_start <= i && c.period_end >= i)) {
+                                return;
+                            }
+
+                            changes.push(new ChangesUIRecordClass(group, branch, i, i, appointment))
+                            i++;
+                        }
                     }
                 })
             })
 
         }
+        do_app(app_filtered.filter(app => app.type === 'activity' && app.valid && !app.cancelled), this)
+        do_app(app_filtered.filter(app => app.type === 'activity' && app.valid && app.cancelled), this)
+
         do_app(app_filtered.filter(app => app.type === 'lesson' && app.valid && !app.cancelled), this)
         do_app(app_filtered.filter(app => app.type === 'lesson' && app.valid && app.cancelled), this)
-        do_app(app_filtered.filter(app => !app.valid), this)
+
+        do_app(app_filtered.filter(app => app.type === "lesson" && !app.valid), this)
 
         changes.sort((a, b) => {
             if (a.appointment.type !== b.appointment.type) {
