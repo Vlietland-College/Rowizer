@@ -6,6 +6,7 @@ import ZermeloConnector from "./connectors/zermeloConnector.js";
 import {ChangesUiManager} from "./views/changes/changesUiManager.js";
 import AbsenceEntity from "./controllers/absences/absenceEntity.js";
 import {AbsencesUiManager} from "./views/absences/absencesUiManager.js";
+import OutOfOffice from "./controllers/outofoffice/outOfOffice.js";
 
 let params = new URLSearchParams(window.location.search)
 
@@ -42,6 +43,10 @@ $(document).ready(function () {
 
     var absences = new Absences(connector)
     var absencesUiManager = new AbsencesUiManager(document.querySelector("#absences-container>div"),connector,absences);
+
+
+    var outofoffice = new OutOfOffice(connector)
+
 
     window.cm = changesUiManager
     window.zc = connector
@@ -102,6 +107,8 @@ $(document).ready(function () {
                 throw err
             }
         });
+
+        connector.waitUntilReady().then(a=> outofoffice.setExternalLocationName("extern").then(a=> outofoffice.loadAll() ))
 
 
     })

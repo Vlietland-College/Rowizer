@@ -1,4 +1,5 @@
 import ChangedRecordHolder from "./lib/changedRecordHolder.js";
+import {mergeAppointments, arraysEqual} from "../../zermelo/utils/mergeAppointments.js";
 
 class Changes {
     #date;
@@ -73,56 +74,6 @@ class Changes {
         this.#appointments = {}
     }
 
-    /**
-     * Before version 24.07 lessons than span multiple timeslots were split up into different appointments. To anticipate this change, lessons that span multiple hours are combined into a single appointment.
-     * @param appointments object with id->appointments
-     */
-    #combineSpansMultipleHours(appointments){
-        let arraysEqual = (a,b) => JSON.stringify(a.sort()) === JSON.stringify(b.sort())
-        let sets = []
-        Object.values(appointments).forEach(appointment=>{
-
-            let found_set = sets.find(comp_app_set =>{
-                let a = appointment
-                let b = comp_app_set[0]
-                let is_equal = arraysEqual(a.courses, b.courses) && arraysEqual(a.subjects, b.subjects) && arraysEqual(a.groupsInDepartments, b.groupsInDepartments) && arraysEqual(a.teachers, b.teachers) && a.appointmentLastModified === b.appointmentLastModified && a.valid === b.valid && a.cancelled === b.cancelled
-                return is_equal
-            })
-
-            if(found_set){
-                found_set.push(appointment)
-                //console.log("equal found for ", appointment, found_set[0])
-            }
-            else{
-                sets.push([appointment])
-            }
-
-
-        })
-        sets.forEach(set =>{
-
-            if(set.length > 1 ){
-                set.sort((a,b) => {
-                    return a.startTimeSlot - b.startTimeSlot
-                })
-                let can_be_combined = set.slice(0,-1).every((item,index)=> item.endTimeSlot+1 === set[index+1].startTimeSlot)
-                if(can_be_combined) {
-                    let first_appointment = set.shift()
-                    first_appointment.endTimeSlot = set.slice(-1)[0].endTimeSlot
-                    //not really necessary but we'll do this for now to debug
-                    first_appointment.combinedWith = []
-
-                    set.forEach(item => {
-                        first_appointment.combinedWith.push(item)
-                        delete appointments[Number(item.id)]
-                    })
-                }
-            }
-        })
-        return appointments
-
-    }
-
     async loadData(){
         //TODO: remove debug props
 
@@ -162,10 +113,11 @@ class Changes {
         })
 
         if(this.#mergeMultipleHourSpan){
-            this.#combineSpansMultipleHours(modified_appointments)
+            modified_appointments =  mergeAppointments(Object.values(modified_appointments), (a,b) => arraysEqual(a.courses, b.courses) && arraysEqual(a.subjects, b.subjects) && arraysEqual(a.groupsInDepartments, b.groupsInDepartments) && arraysEqual(a.teachers, b.teachers) && a.appointmentLastModified === b.appointmentLastModified && a.valid === b.valid && a.cancelled === b.cancelled)
+            //this.#combineSpansMultipleHours(modified_appointments)
         }
 
-        Object.values(modified_appointments).forEach(appointment=>{
+        modified_appointments.forEach(appointment=>{
             //bepalen of er hele afdelingen en/of jaarlagen in zitten
             //years heeft jaren als key en array met departments als value
             let years = {}
@@ -235,7 +187,11 @@ class Changes {
 
 
         })
-        Object.assign(this.#appointments, modified_appointments)
+
+        let modified_objects_object = {}
+        modified_appointments.forEach(app => modified_objects_object[app.id] = app)
+
+        Object.assign(this.#appointments, modified_objects_object)
         return modified_appointments
     }
 

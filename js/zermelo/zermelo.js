@@ -15,6 +15,7 @@ import DaytimetablesManager from "./lib/daytimetables/daytimetablesManager.js";
 import RealizedweektimetablesManager from "./lib/realizedweektimetables/realizedweektimetablesManager.js";
 import TimetableoverridesManager from "./lib/timetableoverrides/timetableoverridesManager.js";
 import WeektimetablesManager from "./lib/weektimetables/weektimetablesManager.js";
+import LocationOfBranchesManager from "./lib/locationofbranches/locationOfBranchesManager.js";
 
 
 
@@ -43,6 +44,8 @@ class ZermeloApi  {
         this.schools = new SchoolsManager(this.#session);
         this.appointments = new AppointmentsManager(this.#session);
         this.branches = new BranchesManager(this.#session)
+
+        this.locationofbranches = new LocationOfBranchesManager(this.#session);
 
         this.branchesOfSchools = new BranchesOfSchoolsManager(this.#session);
         this.departmentsOfBranches = new DepartmentsOfBranchesManager(this.#session);
