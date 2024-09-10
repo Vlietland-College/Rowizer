@@ -2,18 +2,19 @@
  * Before version 24.07 lessons than span multiple timeslots were split up into different appointments. To anticipate this change, lessons that span multiple hours are combined into a single appointment.
  * @param appointments object with id->appointments
  */
-function mergeAppointments(appointments, comp_func){
+function mergeAppointments(appointments, comp_func, before_func = (original,to_merge)=>{}){
     let sets = []
     Object.values(appointments).forEach(appointment=>{
 
         let found_set = sets.find(comp_app_set =>{
             let a = appointment
             let b = comp_app_set[0]
-            let is_equal = arraysEqual(a.courses, b.courses) && arraysEqual(a.subjects, b.subjects) && arraysEqual(a.groupsInDepartments, b.groupsInDepartments) && arraysEqual(a.teachers, b.teachers) && a.appointmentLastModified === b.appointmentLastModified && a.valid === b.valid && a.cancelled === b.cancelled
+            let is_equal = comp_func(a,b)//arraysEqual(a.courses, b.courses) && arraysEqual(a.subjects, b.subjects) && arraysEqual(a.groupsInDepartments, b.groupsInDepartments) && arraysEqual(a.teachers, b.teachers) && a.appointmentLastModified === b.appointmentLastModified && a.valid === b.valid && a.cancelled === b.cancelled
             return is_equal
         })
 
         if(found_set){
+            before_func(found_set[0], appointment)
             found_set.push(appointment)
             //console.log("equal found for ", appointment, found_set[0])
         }

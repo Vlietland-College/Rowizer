@@ -7,6 +7,7 @@ import {ChangesUiManager} from "./views/changes/changesUiManager.js";
 import AbsenceEntity from "./controllers/absences/absenceEntity.js";
 import {AbsencesUiManager} from "./views/absences/absencesUiManager.js";
 import OutOfOffice from "./controllers/outofoffice/outOfOffice.js";
+import {OutOfOfficeUiManager} from "./views/outOfOffice/outOfOfficeUiManager.js";
 
 let params = new URLSearchParams(window.location.search)
 
@@ -31,6 +32,8 @@ $(document).ready(function () {
     let param_branch = params.get("branch");
     let param_ignore = params.get("departmentsIgnore");
     let param_merge = params.get("mergeAppointments")
+    let param_external = params.get("external")
+    param_external = param_external ? param_external : "extern"
 
 
     let connector = new ZermeloConnector(zapi,param_date ? param_date : undefined, {branch: param_branch? param_branch : undefined, ignore_departments:param_ignore ? param_ignore.split(",") : []})
@@ -46,7 +49,7 @@ $(document).ready(function () {
 
 
     var outofoffice = new OutOfOffice(connector)
-
+    var outOfOfficeUiManager = new OutOfOfficeUiManager(document.querySelector("#outofoffice-container>div"),connector,outofoffice)
 
     window.cm = changesUiManager
     window.zc = connector
@@ -108,7 +111,12 @@ $(document).ready(function () {
             }
         });
 
-        connector.waitUntilReady().then(a=> outofoffice.setExternalLocationName("extern").then(a=> outofoffice.loadAll() ))
+        connector.waitUntilReady().then(a=> outofoffice.setExternalLocationName(param_external)).catch(err=>console.log(err))
+            .then(a=> outofoffice.loadAll())
+            .then(items=>{
+                document.querySelector("#outofoffice-container").style.display = null
+                outOfOfficeUiManager.refresh()
+            })
 
 
     })
@@ -122,11 +130,11 @@ $(document).ready(function () {
     }))
 
 
-    $( window ).on( "resize", function() {
+    /*$( window ).on( "resize", function() {
         console.log("resize")
         //also keep in mind the height of the resized window, scrollheigt-height is what we need to scroll
 
-    } );
+    } );*/
 
 
     // Your code to run since DOM is loaded and ready

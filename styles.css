@@ -137,7 +137,7 @@ div.appointment.new{
 /**afwezigen**/
 
 .absence:not(:last-child)::after {
-    content:" -"
+    content:" - "
 }
 .absence:first-child {
     margin-left: 5px;
@@ -149,4 +149,17 @@ div.appointment.new{
     row-gap: 3px;
     column-gap: 3px;
 }
+
+/** extene activiteiten **/
+.outofoffice:first-child {
+    margin-left: 5px;
+}
+.outofoffice > div {
+    display: contents;
+    margin-left: 5px;
+}
+.outofoffice > div:not(:last-child)::after {
+    content:" // "
+}
+
 

@@ -14,12 +14,12 @@ export default class OutOfOffice {
         this.#lastModified = 0;
 
     }
-    get absences(){
-        return null
+    get outOfOffices(){
+        return this.#outOfOffices
     }
     reset(){
         this.#lastModified = 0;
-        this.#outOfOffices = {};
+        this.#outOfOffices = [];
     }
 
     async setExternalLocationName(name){
@@ -44,12 +44,18 @@ export default class OutOfOffice {
         let appointments = await  this.connector.api.appointments.get({
             branchOfSchool: this.connector.branch.id,
             locationsOfBranch: this.#location,
+            valid: true,
             fields: ["id","appointmentInstance", "start", "end", "startTimeSlot", "endTimeSlot", "type", "groups", "groupsInDepartments", "locations", "cancelled", "cancelledReason", "modified", "teacherChanged", "groupChanged", "locationChanged", "timeChanged", "moved", "hidden", "changeDescription", "schedulerRemark", "lastModified", "base", "courses", "appointmentLastModified", "remark", "subjects", "teachers","valid", "students"],
             start: this.connector.date.getStartOfDayTime()/1000,
             end:this.connector.date.getEndOfDayTime()/1000,
             modifiedSince: this.#lastModified
         })
         appointments = mergeAppointments(appointments, (a,b) => arraysEqual(a.courses, b.courses) && arraysEqual(a.subjects, b.subjects)  && arraysEqual(a.teachers, b.teachers) && a.appointmentLastModified === b.appointmentLastModified && a.valid === b.valid && a.cancelled === b.cancelled)
+        appointments = mergeAppointments(appointments, (a,b)=> a.start === b.start && a.end === b.end, (a,b) =>  a.teachers = a.teachers.concat(b.teachers))
+
+        let appointment_sets_same_hours = []
+
+
         //make sets for partial attendance
         let appointment_sets = {}
         appointments.forEach(appointment =>{
@@ -59,7 +65,8 @@ export default class OutOfOffice {
             appointment_sets[appointment.subjects].push(appointment)
 
         })
-        console.log(appointment_sets)
+        this.#outOfOffices = Object.values(appointment_sets).map(set=> new OutOfOfficeEntity(set))
+        return this.#outOfOffices
 
     }
 
