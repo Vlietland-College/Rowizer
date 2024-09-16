@@ -71,7 +71,7 @@ export class ChangesUiManager {
         let app_filtered = Object.values(this.changesManager.appointments).filter(app => app.groupsInDepartments.length)
 
 
-        
+
 
         let do_app = function (apps, cm) {
             apps.forEach(appointment => {
@@ -137,7 +137,15 @@ export class ChangesUiManager {
 
     async refreshTable() {
         //TODO: this is quick n dirty way to show the new changes
-        let changes = await this.changesManager.loadData()
+
+        try{
+            var changes = await this.changesManager.loadData()
+        }
+        catch (e){
+            console.error(e)
+            return;
+
+        }
         if (Object.keys(changes).length) {
             this.scroller.stop()
             this.element.innerHTML = ""

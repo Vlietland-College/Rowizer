@@ -35,9 +35,9 @@ class Session{
         try {
             var result =  await fetch(req, req_options)
         }
-        catch{
+        catch (e){
 
-            throw new ZermeloError(data.response.status+" "+data.response.message);
+            throw new ZermeloError(e);
         }
         /*if(!c_res) {
             cache.put(url, result.clone());

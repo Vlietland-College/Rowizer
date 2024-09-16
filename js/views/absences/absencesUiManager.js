@@ -29,7 +29,12 @@ export class AbsencesUiManager {
 
     async refresh() {
         //TODO: this is quick n dirty way to show the new changes
-        let changes = await this.absencesManager.loadAll()
+        try{
+            var changes = await this.absencesManager.loadAll()
+        } catch(e){
+            console.error(e)
+            return;
+        }
         if (Object.keys(changes).length) {
             this.element.innerHTML = ""
             this.render()

@@ -75,6 +75,8 @@ $(document).ready(function () {
 
                 let new_date = new Date();
                 if(last_checked_date.getDate() < new_date.getDate()){
+                    //FIXME: now we do a hard reload
+                    location.reload()
                     let diff = Math.round((new_date.getTime() - last_checked_date.getTime())/ (1000 * 3600 * 24));
                     let new_date_obk = new Date(connector.date)
                     new_date_obk.setDate(new_date_obk.getDate() + diff);
