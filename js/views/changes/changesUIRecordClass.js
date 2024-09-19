@@ -28,6 +28,7 @@ export default class ChangesUIRecordClass extends ChangesUIRecord {
                     }
                     str += " "
                 }
+
             }
 
             str += this.appointment.teachers.slice(0, 2).join(",")
@@ -37,9 +38,7 @@ export default class ChangesUIRecordClass extends ChangesUIRecord {
             str += " "
 
             if (this.appointment.locations.length) {
-                //shortest location so we probably get an actual classroom
-                let loc = this.appointment.locations.sort((a,b) => a.length - b.length)
-                str += loc[0]
+                str += this.appointment.locations.sort((a,b)=>a.length-b.length)[0]
             }
 
         } else {
