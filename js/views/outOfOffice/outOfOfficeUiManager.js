@@ -6,6 +6,7 @@ export class OutOfOfficeUiManager {
         this.element = element
         this.outOfOfficeManager = manager;
         this.connector = connector
+        OutOfOfficeUiRecord.connector = connector;
     }
 
     render() {

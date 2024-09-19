@@ -154,12 +154,19 @@ div.appointment.new{
 .outofoffice:first-child {
     margin-left: 5px;
 }
-.outofoffice > div {
+.outofoffice > div{
     display: contents;
     margin-left: 5px;
 }
+.outofoffice:not(:last-child)::after {
+    content: " || "
+                             }
 .outofoffice > div:not(:last-child)::after {
     content:" // "
+}
+
+#outofoffice-container  * {
+    display: contents;
 }
 
 

@@ -1,5 +1,5 @@
 import OutOfOfficeEntity from "./outOfOfficeEntity.js";
-import {arraysEqual, mergeAppointments} from "../../zermelo/utils/mergeAppointments.js";
+import {arraysEqual, mergeAppointments, mergeSubsequentAppointments} from "../../zermelo/utils/mergeAppointments.js";
 
 export default class OutOfOffice {
     #lastModified;
@@ -45,12 +45,13 @@ export default class OutOfOffice {
             branchOfSchool: this.connector.branch.id,
             locationsOfBranch: this.#location,
             valid: true,
+            cancelled: false,
             fields: ["id","appointmentInstance", "start", "end", "startTimeSlot", "endTimeSlot", "type", "groups", "groupsInDepartments", "locations", "cancelled", "cancelledReason", "modified", "teacherChanged", "groupChanged", "locationChanged", "timeChanged", "moved", "hidden", "changeDescription", "schedulerRemark", "lastModified", "base", "courses", "appointmentLastModified", "remark", "subjects", "teachers","valid", "students"],
             start: this.connector.date.getStartOfDayTime()/1000,
             end:this.connector.date.getEndOfDayTime()/1000,
             modifiedSince: this.#lastModified
         })
-        appointments = mergeAppointments(appointments, (a,b) => arraysEqual(a.courses, b.courses) && arraysEqual(a.subjects, b.subjects)  && arraysEqual(a.teachers, b.teachers) && a.appointmentLastModified === b.appointmentLastModified && a.valid === b.valid && a.cancelled === b.cancelled)
+        appointments = mergeSubsequentAppointments(appointments)
         appointments = mergeAppointments(appointments, (a,b)=> a.start === b.start && a.end === b.end, (a,b) =>  a.teachers = a.teachers.concat(b.teachers))
 
         let appointment_sets_same_hours = []

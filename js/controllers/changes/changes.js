@@ -1,5 +1,5 @@
 import ChangedRecordHolder from "./lib/changedRecordHolder.js";
-import {mergeAppointments, arraysEqual} from "../../zermelo/utils/mergeAppointments.js";
+import {mergeSubsequentAppointments, arraysEqual} from "../../zermelo/utils/mergeAppointments.js";
 
 class Changes {
     #date;
@@ -113,7 +113,7 @@ class Changes {
         })
 
         if(this.#mergeMultipleHourSpan){
-            modified_appointments =  mergeAppointments(Object.values(modified_appointments), (a,b) => arraysEqual(a.courses, b.courses) && arraysEqual(a.subjects, b.subjects) && arraysEqual(a.groupsInDepartments, b.groupsInDepartments) && arraysEqual(a.teachers, b.teachers) && a.appointmentLastModified === b.appointmentLastModified && a.valid === b.valid && a.cancelled === b.cancelled)
+            modified_appointments =  mergeSubsequentAppointments(Object.values(modified_appointments))
             //this.#combineSpansMultipleHours(modified_appointments)
         }
 
