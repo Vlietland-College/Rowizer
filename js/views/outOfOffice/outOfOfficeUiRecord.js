@@ -15,7 +15,7 @@ export default class OutOfOfficeUiRecord {
         let el = document.createElement("div");
         el.classList.add("outofoffice")
         let when_text = " "
-        when_text += this.outOfOffice.subject.replace("_", " ")+" ";
+        when_text += this.outOfOffice.subject.replace("_", " ");
         el.innerText = when_text
         this.outOfOffice.appointments.sort((a,b)=>a.start-b.start).sort((a,b)=>(a.end-a.start)-(b.end-b.start))
         let timeslots = OutOfOfficeUiRecord.connector.getTodayTimeSlots()

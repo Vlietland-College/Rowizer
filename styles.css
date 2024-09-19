@@ -151,22 +151,23 @@ div.appointment.new{
 }
 
 /** extene activiteiten **/
-.outofoffice:first-child {
+#outofoffice-inner-container {
     margin-left: 5px;
 }
 .outofoffice > div{
-    display: contents;
+    display: inline;
     margin-left: 5px;
+
 }
 .outofoffice:not(:last-child)::after {
     content: " || "
                              }
 .outofoffice > div:not(:last-child)::after {
-    content:" // "
+    content:" /"
 }
 
 #outofoffice-container  * {
-    display: contents;
+    display: inline;
 }
 
 

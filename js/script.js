@@ -49,7 +49,7 @@ $(document).ready(function () {
 
 
     var outofoffice = new OutOfOffice(connector)
-    var outOfOfficeUiManager = new OutOfOfficeUiManager(document.querySelector("#outofoffice-container>div"),connector,outofoffice)
+    var outOfOfficeUiManager = new OutOfOfficeUiManager(document.querySelector("#outofoffice-inner-container"),connector,outofoffice)
 
     window.cm = changesUiManager
     window.zc = connector
@@ -116,8 +116,19 @@ $(document).ready(function () {
         connector.waitUntilReady().then(a=> outofoffice.setExternalLocationName(param_external)).catch(err=>console.log(err))
             .then(a=> outofoffice.loadAll())
             .then(items=>{
-                document.querySelector("#outofoffice-container").style.display = null
+                if(outofoffice.outOfOffices.length){
+                    document.querySelector("#outofoffice-container").style.display = null
+                }
                 outOfOfficeUiManager.refresh()
+                setInterval(()=>{
+                    outOfOfficeUiManager.refresh();
+                    if(outofoffice.outOfOffices.length){
+                        document.querySelector("#outofoffice-container").style.display = null
+                    }
+                    else{
+                        document.querySelector("#outofoffice-container").style.display = "none"
+                    }
+                }, 5*60*1000)
             })
 
 

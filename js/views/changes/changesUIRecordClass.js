@@ -17,7 +17,7 @@ export default class ChangesUIRecordClass extends ChangesUIRecord {
         if (!this.appointment.cancelled && this.appointment.valid) {
             //dit gaat door
             if(this.appointment.type === "activity"){
-                str += this.appointment.subjects[0]
+                str += this.appointment.subjects[0].replace("_", " ")
                 str += " "
 
             } else {
