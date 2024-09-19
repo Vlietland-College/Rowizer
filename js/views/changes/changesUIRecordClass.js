@@ -38,7 +38,7 @@ export default class ChangesUIRecordClass extends ChangesUIRecord {
             str += " "
 
             if (this.appointment.locations.length) {
-                str += this.appointment.locations[0]
+                str += this.appointment.locations.sort((a,b)=>a.length-b.length)[0]
             }
 
         } else {
