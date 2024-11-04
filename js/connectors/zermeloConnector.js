@@ -42,7 +42,7 @@ export default class ZermeloConnector extends connector {
         this.#timeslots = []
 
 
-        if(!Object.keys(options).includes("branch") && !options.branch){
+        if(!Object.keys(options).includes("branch") || !options.branch){
             this.api.branches.get().then(branches=>{
                 if(branches.length !== 1){
                     throw new Error("More than one branch, need to set branch")
