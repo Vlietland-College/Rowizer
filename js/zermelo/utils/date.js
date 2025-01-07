@@ -8,7 +8,7 @@ Date.prototype.getWeekNumber = function(){
     return Math.ceil((((d - yearStart) / 86400000) + 1)/7)
 };
 
-Date.prototype.getPaddedWeekNumber() = function(){
+Date.prototype.getPaddedWeekNumber = function(){
     let d = this.getWeekNumber().toString()
     if(d.length < 2){
         return "0"+d
