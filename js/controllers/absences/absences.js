@@ -25,7 +25,11 @@ export default class Absences {
         if(!this.connector.date.isWeekDay()){
             return []
         }
-        let weekyear = this.connector.date.getFullYear().toString()+this.connector.date.getWeekNumber()
+        let weeknumber = this.connector.date.getWeekNumber().toString()
+        if(weeknumber.length < 2){
+            weeknumber = "0"+weeknumber
+        }
+        let weekyear = this.connector.date.getFullYear().toString()+weeknumber
         let headers = new Headers();
         headers.append("If-Modified-Since", new Date(this.#lastModified*1000).toUTCString())
         let absences = await this.connector.api.employeeAbsences.get({
