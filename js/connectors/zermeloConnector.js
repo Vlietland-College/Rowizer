@@ -192,7 +192,7 @@ export default class ZermeloConnector extends connector {
                     timeslot.timeSlotName = this.#timeslotNames[timeslot.timeSlotName]
                 })
 
-                this.#realizedWeekTimeTables = await this.api.realizedweektimetables.get({schoolInSchoolYear: this.#branchOfSchool.schoolInSchoolYear, week:this.#date.getFullYear().toString() + this.#date.getWeekNumber().toString()})
+                this.#realizedWeekTimeTables = await this.api.realizedweektimetables.get({schoolInSchoolYear: this.#branchOfSchool.schoolInSchoolYear, week:this.#date.getFullYear().toString() + this.#date.getPaddedWeekNumber()})
                 this.#dayTimeTables = await this.api.daytimetables.get({schoolInSchoolYear: this.#branchOfSchool.schoolInSchoolYear})
 
                 this.#isReady = true
