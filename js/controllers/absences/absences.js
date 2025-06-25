@@ -31,7 +31,7 @@ export default class Absences {
         }
         let weekyear = this.connector.date.getFullYear().toString()+weeknumber
         let headers = new Headers();
-        headers.append("If-Modified-Since", new Date(this.#lastModified*1000).toUTCString())
+        //headers.append("If-Modified-Since", new Date(this.#lastModified*1000).toUTCString())
         let absences = await this.connector.api.employeeAbsences.get({
             branchOfSchool: this.connector.branch.id,
             startWeek: weekyear,
